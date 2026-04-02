@@ -1,4 +1,5 @@
 from .db import apply_migrations, get_connection
+from .embeddings import embed_documents, embed_query
 from .store import (
     get_last_msg_id,
     insert_embeddings,
@@ -15,4 +16,6 @@ __all__ = [
     "insert_messages",
     "get_last_msg_id",
     "insert_embeddings",
+    "embed_documents",
+    "embed_query",
 ]
