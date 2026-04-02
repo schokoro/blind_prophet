@@ -1,0 +1,33 @@
+services:
+  infinity:
+    image: michaelf34/infinity:latest
+    command: >
+      v2 --model-id ai-forever/FRIDA --port 7997
+      --no-compile --device cuda --dtype float16
+      --no-model-warmup --batch-size 16
+    ports:
+      - "127.0.0.1:7997:7997"
+    volumes:
+      - huggingface_cache:/app/.cache/huggingface
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+    networks:
+      - avatar-net
+    healthcheck:
+      test: ["CMD", "curl", "-sf", "http://localhost:7997/models"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 60s
+
+networks:
+  avatar-net:
+    driver: bridge
+
+volumes:
+  huggingface_cache:

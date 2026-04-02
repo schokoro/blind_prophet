@@ -1,0 +1,25 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "blind-prophet"
+version = "0.1.0"
+requires-python = ">=3.11"
+dependencies = [
+    "sqlite-vec",
+    "typer",
+    "telethon",
+    "pydantic-settings",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest",
+]
+
+[tool.hatch.build.targets.wheel]
+packages = ["amnesiac"]
+
+[tool.pytest.ini_options]
+pythonpath = ["."]
