@@ -44,14 +44,23 @@ def scrape(
             conn = get_connection(db_path)
             apply_migrations(conn)
 
-            accounts_data = yaml.safe_load(Path("config/accounts.yaml").read_text())
-            account = accounts_data["accounts"][0]
+            try:
+                accounts_data = yaml.safe_load(Path("config/accounts.yaml").read_text())
+                accounts = (accounts_data or {}).get("accounts", [])
+                account = accounts[0] if accounts else None
+            except FileNotFoundError:
+                account = None
 
-            async with TelegramClient(
-                account["session_file"],
-                settings.tg_api_id,
-                settings.tg_api_hash,
-            ) as client:
+            if account:
+                api_id = account["api_id"]
+                api_hash = account["api_hash"]
+                session_file = account["session_file"]
+            else:
+                api_id = settings.tg_api_id
+                api_hash = settings.tg_api_hash
+                session_file = settings.tg_session_path
+
+            async with TelegramClient(session_file, api_id, api_hash) as client:
                 if not await client.is_user_authorized():
                     raise RuntimeError(
                         "Telegram client is not authorized. Run an interactive login first."

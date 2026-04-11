@@ -171,8 +171,8 @@ async def test_run_all_distributes_channels():
     """Test that run_all distributes channels across accounts via round-robin."""
     accounts_yaml = {
         "accounts": [
-            {"phone": "+70000000001", "session_file": "sess_a"},
-            {"phone": "+70000000002", "session_file": "sess_b"},
+            {"phone": "+70000000001", "session_file": "sess_a", "api_id": 111, "api_hash": "hash_a"},
+            {"phone": "+70000000002", "session_file": "sess_b", "api_id": 222, "api_hash": "hash_b"},
         ]
     }
     channels_yaml = {
@@ -180,11 +180,13 @@ async def test_run_all_distributes_channels():
     }
 
     scraped: dict[str, list[str]] = defaultdict(list)
+    client_calls: list[tuple] = []
 
     async def fake_scrape(client, channel, conn, batch_size=200, inter_batch_sleep=1.0):
         scraped[client._session_file].append(channel)
 
     def make_mock_client(session_file, api_id, api_hash):
+        client_calls.append((session_file, api_id, api_hash))
         c = MagicMock()
         c._session_file = session_file
         c.connect = AsyncMock()
@@ -201,8 +203,6 @@ async def test_run_all_distributes_channels():
         patch("amnesiac.collect.runner.apply_migrations"),
         patch("amnesiac.collect.runner.settings") as mock_settings,
     ):
-        mock_settings.tg_api_id = 123
-        mock_settings.tg_api_hash = "abc"
         mock_settings.batch_size = 200
         mock_settings.inter_batch_sleep = 1.0
 
@@ -213,3 +213,7 @@ async def test_run_all_distributes_channels():
     assert total_calls == 4, f"Expected 4 scrape_channel calls, got {total_calls}"
     assert len(scraped["sess_a"]) == 2, f"Expected sess_a to handle 2 channels, got {len(scraped['sess_a'])}"
     assert len(scraped["sess_b"]) == 2, f"Expected sess_b to handle 2 channels, got {len(scraped['sess_b'])}"
+
+    # TelegramClient must be called with per-account credentials, not settings-level
+    assert ("sess_a", 111, "hash_a") in client_calls, f"Expected sess_a with account creds, got {client_calls}"
+    assert ("sess_b", 222, "hash_b") in client_calls, f"Expected sess_b with account creds, got {client_calls}"
