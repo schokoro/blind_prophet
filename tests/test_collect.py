@@ -1,5 +1,6 @@
 import asyncio
 import sqlite3
+from collections import defaultdict
 from datetime import datetime, timezone
 from unittest.mock import AsyncMock, MagicMock, patch
 
@@ -47,17 +48,6 @@ async def _aiter_raise(exc):
     yield  # noqa: unreachable
 
 
-@pytest.fixture
-def mock_embed():
-    """Patch embed_documents to return fake vectors."""
-    with patch(
-        "amnesiac.collect.scraper.embed_documents",
-        new_callable=AsyncMock,
-        side_effect=lambda texts: [[0.0] * 1536 for _ in texts],
-    ) as m:
-        yield m
-
-
 def _make_client(messages) -> MagicMock:
     client = MagicMock()
     client.get_entity = AsyncMock(return_value=MagicMock(title="Test Channel"))
@@ -66,7 +56,7 @@ def _make_client(messages) -> MagicMock:
 
 
 @pytest.mark.asyncio
-async def test_scrape_channel_empty(mock_embed):
+async def test_scrape_channel_empty():
     from amnesiac.collect import scrape_channel
 
     conn = _make_conn()
@@ -75,11 +65,10 @@ async def test_scrape_channel_empty(mock_embed):
 
     count = conn.execute("SELECT COUNT(*) FROM messages").fetchone()[0]
     assert count == 0
-    mock_embed.assert_not_called()
 
 
 @pytest.mark.asyncio
-async def test_scrape_channel_inserts_messages(mock_embed):
+async def test_scrape_channel_inserts_messages():
     from amnesiac.collect import scrape_channel
 
     conn = _make_conn()
@@ -92,7 +81,7 @@ async def test_scrape_channel_inserts_messages(mock_embed):
 
 
 @pytest.mark.asyncio
-async def test_scrape_channel_skips_reposts(mock_embed):
+async def test_scrape_channel_skips_reposts():
     from amnesiac.collect import scrape_channel
 
     conn = _make_conn()
@@ -109,7 +98,7 @@ async def test_scrape_channel_skips_reposts(mock_embed):
 
 
 @pytest.mark.asyncio
-async def test_scrape_channel_skips_no_text(mock_embed):
+async def test_scrape_channel_skips_no_text():
     from amnesiac.collect import scrape_channel
 
     conn = _make_conn()
@@ -126,7 +115,7 @@ async def test_scrape_channel_skips_no_text(mock_embed):
 
 
 @pytest.mark.asyncio
-async def test_scrape_channel_resumes_from_cursor(mock_embed):
+async def test_scrape_channel_resumes_from_cursor():
     from amnesiac.collect import scrape_channel
 
     conn = _make_conn()
@@ -145,7 +134,7 @@ async def test_scrape_channel_resumes_from_cursor(mock_embed):
 
 
 @pytest.mark.asyncio
-async def test_scrape_channel_flood_wait(mock_embed):
+async def test_scrape_channel_flood_wait():
     from telethon.errors import FloodWaitError
 
     from amnesiac.collect import scrape_channel
@@ -175,3 +164,52 @@ async def test_scrape_channel_flood_wait(mock_embed):
         assert client.iter_messages.call_count == 2, (
             f"Expected iter_messages called twice, got {client.iter_messages.call_count}"
         )
+
+
+@pytest.mark.asyncio
+async def test_run_all_distributes_channels():
+    """Test that run_all distributes channels across accounts via round-robin."""
+    accounts_yaml = {
+        "accounts": [
+            {"phone": "+70000000001", "session_file": "sess_a"},
+            {"phone": "+70000000002", "session_file": "sess_b"},
+        ]
+    }
+    channels_yaml = {
+        "channels": ["chan1", "chan2", "chan3", "chan4"],
+    }
+
+    scraped: dict[str, list[str]] = defaultdict(list)
+
+    async def fake_scrape(client, channel, conn, batch_size=200, inter_batch_sleep=1.0):
+        scraped[client._session_file].append(channel)
+
+    def make_mock_client(session_file, api_id, api_hash):
+        c = MagicMock()
+        c._session_file = session_file
+        c.connect = AsyncMock()
+        c.is_user_authorized = AsyncMock(return_value=True)
+        c.disconnect = AsyncMock()
+        return c
+
+    with (
+        patch("amnesiac.collect.runner.yaml.safe_load", side_effect=[accounts_yaml, channels_yaml]),
+        patch("amnesiac.collect.runner.Path.read_text", return_value=""),
+        patch("amnesiac.collect.runner.TelegramClient", side_effect=make_mock_client),
+        patch("amnesiac.collect.runner.scrape_channel", side_effect=fake_scrape),
+        patch("amnesiac.collect.runner.get_connection", return_value=MagicMock()),
+        patch("amnesiac.collect.runner.apply_migrations"),
+        patch("amnesiac.collect.runner.settings") as mock_settings,
+    ):
+        mock_settings.tg_api_id = 123
+        mock_settings.tg_api_hash = "abc"
+        mock_settings.batch_size = 200
+        mock_settings.inter_batch_sleep = 1.0
+
+        from amnesiac.collect.runner import run_all
+        await run_all(":memory:")
+
+    total_calls = sum(len(v) for v in scraped.values())
+    assert total_calls == 4, f"Expected 4 scrape_channel calls, got {total_calls}"
+    assert len(scraped["sess_a"]) == 2, f"Expected sess_a to handle 2 channels, got {len(scraped['sess_a'])}"
+    assert len(scraped["sess_b"]) == 2, f"Expected sess_b to handle 2 channels, got {len(scraped['sess_b'])}"

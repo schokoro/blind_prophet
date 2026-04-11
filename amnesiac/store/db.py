@@ -2,11 +2,15 @@ import logging
 import sqlite3
 from pathlib import Path
 
-import sqlite_vec
+try:
+    import sqlite_vec
+    _SQLITE_VEC_AVAILABLE = True
+except ImportError:
+    _SQLITE_VEC_AVAILABLE = False
 
 logger = logging.getLogger(__name__)
 
-MIGRATIONS: list[tuple[str, str]] = [
+_BASE_MIGRATIONS: list[tuple[str, str]] = [
     (
         "001_create_accounts",
         """
@@ -50,25 +54,45 @@ MIGRATIONS: list[tuple[str, str]] = [
         )
         """,
     ),
-    (
-        "004_create_vec_messages",
-        """
-        CREATE VIRTUAL TABLE IF NOT EXISTS vec_messages USING vec0(
-            message_id INTEGER PRIMARY KEY,
-            embedding FLOAT[1536]
-        )
-        """,
-    ),
 ]
+
+_VEC_MIGRATION: tuple[str, str] = (
+    "004_create_vec_messages",
+    """
+    CREATE VIRTUAL TABLE IF NOT EXISTS vec_messages USING vec0(
+        message_id INTEGER PRIMARY KEY,
+        embedding FLOAT[1536]
+    )
+    """,
+)
+
+
+def _get_migrations() -> list[tuple[str, str]]:
+    from amnesiac.config import settings
+
+    if settings.sqlite_vec_enabled:
+        return _BASE_MIGRATIONS + [_VEC_MIGRATION]
+    return _BASE_MIGRATIONS
 
 
 def get_connection(path: str | Path) -> sqlite3.Connection:
+    from amnesiac.config import settings
+
     path = Path(path)
     path.parent.mkdir(parents=True, exist_ok=True)
     conn = sqlite3.connect(str(path))
-    conn.enable_load_extension(True)
-    sqlite_vec.load(conn)
-    conn.enable_load_extension(False)
+
+    if settings.sqlite_vec_enabled:
+        if _SQLITE_VEC_AVAILABLE:
+            conn.enable_load_extension(True)
+            sqlite_vec.load(conn)
+            conn.enable_load_extension(False)
+        else:
+            logger.warning(
+                "sqlite_vec_enabled=True but sqlite_vec is not installed; "
+                "vector storage will be unavailable"
+            )
+
     conn.execute("PRAGMA journal_mode=WAL")
     conn.execute("PRAGMA foreign_keys=ON")
     return conn
@@ -87,7 +111,7 @@ def apply_migrations(conn: sqlite3.Connection) -> None:
 
     applied = {row[0] for row in conn.execute("SELECT name FROM migrations")}
 
-    for name, sql in MIGRATIONS:
+    for name, sql in _get_migrations():
         if name in applied:
             continue
         conn.execute(sql)

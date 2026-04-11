@@ -1,6 +1,7 @@
 import asyncio
 import logging
 from pathlib import Path
+from typing import Optional
 
 import typer
 
@@ -26,35 +27,48 @@ def init_db(
 
 @app.command()
 def scrape(
-    channel: str = typer.Option(..., help="Telegram channel username"),
+    channel: Optional[str] = typer.Option(None, help="Telegram channel username (omit for all)"),
     db_path: Path = typer.Option(DEFAULT_DB_PATH, help="Path to SQLite database file"),
 ) -> None:
-    """Scrape messages from a Telegram channel into the database."""
+    """Scrape messages from Telegram channels into the database."""
 
-    async def _run() -> None:
-        from telethon import TelegramClient
+    if channel is not None:
+        async def _run_single() -> None:
+            import yaml
+            from telethon import TelegramClient
 
-        from amnesiac.collect import scrape_channel
-        from amnesiac.config import settings
-        from amnesiac.store import apply_migrations, get_connection
+            from amnesiac.collect import scrape_channel
+            from amnesiac.config import settings
+            from amnesiac.store import apply_migrations, get_connection
 
-        conn = get_connection(db_path)
-        apply_migrations(conn)
+            conn = get_connection(db_path)
+            apply_migrations(conn)
 
-        async with TelegramClient(
-            settings.tg_session_path,
-            settings.tg_api_id,
-            settings.tg_api_hash,
-        ) as client:
-            if not await client.is_user_authorized():
-                raise RuntimeError(
-                    "Telegram client is not authorized. Run an interactive login first."
+            accounts_data = yaml.safe_load(Path("config/accounts.yaml").read_text())
+            account = accounts_data["accounts"][0]
+
+            async with TelegramClient(
+                account["session_file"],
+                settings.tg_api_id,
+                settings.tg_api_hash,
+            ) as client:
+                if not await client.is_user_authorized():
+                    raise RuntimeError(
+                        "Telegram client is not authorized. Run an interactive login first."
+                    )
+                await scrape_channel(
+                    client, channel, conn,
+                    batch_size=settings.batch_size,
+                    inter_batch_sleep=settings.inter_batch_sleep,
                 )
-            await scrape_channel(client, channel, conn)
 
-        conn.close()
+            conn.close()
 
-    asyncio.run(_run())
+        asyncio.run(_run_single())
+    else:
+        from amnesiac.collect import run_all
+
+        asyncio.run(run_all(db_path))
 
 
 if __name__ == "__main__":

@@ -12,6 +12,7 @@ dependencies = [
     "telethon",
     "pydantic-settings",
     "httpx",
+    "pyyaml",
 ]
 
 [project.optional-dependencies]

@@ -1,7 +1,14 @@
+import logging
 import sqlite3
 from datetime import datetime, timezone
 
-import sqlite_vec
+logger = logging.getLogger(__name__)
+
+try:
+    import sqlite_vec as _sqlite_vec
+    _SQLITE_VEC_AVAILABLE = True
+except ImportError:
+    _SQLITE_VEC_AVAILABLE = False
 
 
 def upsert_channel(conn: sqlite3.Connection, username: str, title: str | None) -> int:
@@ -73,10 +80,21 @@ def get_last_msg_id(conn: sqlite3.Connection, channel_id: int) -> int | None:
 
 
 def insert_embeddings(conn: sqlite3.Connection, pairs: list[tuple[int, list[float]]]) -> None:
+    from amnesiac.config import settings
+
     if not pairs:
         return
+
+    if not settings.sqlite_vec_enabled or not _SQLITE_VEC_AVAILABLE:
+        logger.warning(
+            "insert_embeddings: skipped (sqlite_vec_enabled=%s, available=%s)",
+            settings.sqlite_vec_enabled,
+            _SQLITE_VEC_AVAILABLE,
+        )
+        return
+
     conn.executemany(
         "INSERT OR REPLACE INTO vec_messages (message_id, embedding) VALUES (?, ?)",
-        [(mid, sqlite_vec.serialize_float32(vec)) for mid, vec in pairs],
+        [(mid, _sqlite_vec.serialize_float32(vec)) for mid, vec in pairs],
     )
     conn.commit()

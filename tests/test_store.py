@@ -1,5 +1,6 @@
 import sqlite3
 from pathlib import Path
+from unittest.mock import patch
 
 import pytest
 
@@ -82,6 +83,28 @@ def test_get_last_msg_id_returns_max(conn: sqlite3.Connection) -> None:
     ]
     insert_messages(conn, rows)
     assert get_last_msg_id(conn, cid) == 10
+
+
+def test_sqlite_vec_disabled(tmp_path: Path) -> None:
+    import amnesiac.config as cfg
+    import amnesiac.store.db as db_mod
+    import amnesiac.store.store as store_mod
+
+    with patch.object(cfg.settings, "sqlite_vec_enabled", False):
+        c = get_connection(tmp_path / "disabled.db")
+        apply_migrations(c)
+
+        # vec_messages table must not exist
+        tables = {
+            row[0]
+            for row in c.execute(
+                "SELECT name FROM sqlite_master WHERE type='table'"
+            ).fetchall()
+        }
+        assert "vec_messages" not in tables
+
+        # insert_embeddings must not raise
+        insert_embeddings(c, [(1, [0.1] * 1536)])
 
 
 def test_insert_embeddings(conn: sqlite3.Connection) -> None:
