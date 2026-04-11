@@ -80,5 +80,48 @@ def scrape(
         asyncio.run(run_all(db_path))
 
 
+@app.command()
+def login(
+    session_file: str = typer.Option(..., help="Session file name (without .session)"),
+    api_id: int = typer.Option(..., help="Telegram api_id"),
+    api_hash: str = typer.Option(..., help="Telegram api_hash"),
+    phone: str = typer.Option("", help="Phone number (optional, informational only)"),
+) -> None:
+    """Authorize a Telegram account and upsert it in config/accounts.yaml."""
+    import yaml
+    from telethon import TelegramClient
+
+    async def _authorize() -> None:
+        client = TelegramClient(session_file, api_id, api_hash)
+        await client.start()
+        await client.disconnect()
+
+    asyncio.run(_authorize())
+
+    accounts_path = Path("config/accounts.yaml")
+    if accounts_path.exists():
+        data = yaml.safe_load(accounts_path.read_text()) or {}
+    else:
+        data = {}
+
+    accounts = data.get("accounts") or []
+
+    existing = next((a for a in accounts if a.get("session_file") == session_file), None)
+    if existing:
+        existing["api_id"] = api_id
+        existing["api_hash"] = api_hash
+        if phone:
+            existing["phone"] = phone
+    else:
+        entry: dict = {"session_file": session_file, "api_id": api_id, "api_hash": api_hash}
+        if phone:
+            entry["phone"] = phone
+        accounts.append(entry)
+
+    data["accounts"] = accounts
+    accounts_path.write_text(yaml.dump(data, allow_unicode=True, default_flow_style=False))
+    print("Authorization successful. Account saved to config/accounts.yaml")
+
+
 if __name__ == "__main__":
     app()

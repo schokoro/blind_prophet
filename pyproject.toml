@@ -4,10 +4,9 @@ build-backend = "hatchling.build"
 
 [project]
 name = "blind-prophet"
-version = "0.1.0"
+version = "0.1.1"
 requires-python = ">=3.11"
 dependencies = [
-    "sqlite-vec",
     "typer",
     "telethon",
     "pydantic-settings",
@@ -16,6 +15,7 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
+vec = ["sqlite-vec"]
 dev = [
     "pytest",
     "pytest-asyncio",
