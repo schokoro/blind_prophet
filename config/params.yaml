@@ -1,0 +1,11 @@
+scraper:
+  batch_size: 200
+  inter_batch_sleep: 1.0
+
+proxy:
+  host: ""
+  port: 1080
+
+preprocessing:
+  lead_sentences: 3
+  min_text_length: 50

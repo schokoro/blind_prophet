@@ -12,7 +12,9 @@ dependencies = [
     "pydantic-settings",
     "httpx",
     "pyyaml",
-    "python-socks"
+    "python-socks",
+    "emoji",
+    "razdel"
 ]
 
 [project.optional-dependencies]
