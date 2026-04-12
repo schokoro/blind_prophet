@@ -38,6 +38,7 @@ def scrape(
             from telethon import TelegramClient
 
             from amnesiac.collect import scrape_channel
+            from amnesiac.collect.runner import make_proxy
             from amnesiac.config import settings
             from amnesiac.store import apply_migrations, get_connection
 
@@ -60,7 +61,7 @@ def scrape(
                 api_hash = settings.tg_api_hash
                 session_file = settings.tg_session_path
 
-            async with TelegramClient(session_file, api_id, api_hash) as client:
+            async with TelegramClient(session_file, api_id, api_hash, proxy=make_proxy(settings)) as client:
                 if not await client.is_user_authorized():
                     raise RuntimeError(
                         "Telegram client is not authorized. Run an interactive login first."

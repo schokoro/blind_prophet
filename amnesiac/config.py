@@ -13,6 +13,9 @@ class Settings(BaseSettings):
 
     sqlite_vec_enabled: bool = True
 
+    proxy_host: str = ""
+    proxy_port: int = 1080
+
     model_config = {"env_file": ".env", "extra": "ignore"}
 
     def model_post_init(self, __context):
@@ -28,6 +31,11 @@ class Settings(BaseSettings):
                     self.batch_size = scraper.get("batch_size", self.batch_size)
                 if "inter_batch_sleep" not in self.model_fields_set:
                     self.inter_batch_sleep = scraper.get("inter_batch_sleep", self.inter_batch_sleep)
+                proxy = data.get("proxy", {})
+                if "proxy_host" not in self.model_fields_set:
+                    self.proxy_host = proxy.get("host", self.proxy_host)
+                if "proxy_port" not in self.model_fields_set:
+                    self.proxy_port = proxy.get("port", self.proxy_port)
         except Exception:
             pass
 

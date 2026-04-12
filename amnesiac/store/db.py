@@ -10,7 +10,7 @@ except ImportError:
 
 logger = logging.getLogger(__name__)
 
-_BASE_MIGRATIONS: list[tuple[str, str]] = [
+_BASE_MIGRATIONS: list[tuple[str, str | list[str]]] = [
     (
         "001_create_accounts",
         """
@@ -54,25 +54,40 @@ _BASE_MIGRATIONS: list[tuple[str, str]] = [
         )
         """,
     ),
+    (
+        "005_create_processed_messages",
+        """
+        CREATE TABLE IF NOT EXISTS processed_messages (
+            id INTEGER PRIMARY KEY,
+            message_id INTEGER UNIQUE NOT NULL REFERENCES messages(id),
+            processed_text TEXT NOT NULL,
+            is_valid BOOLEAN NOT NULL DEFAULT 1,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )
+        """,
+    ),
+    (
+        "006_recreate_vec_messages",
+        [
+            "DROP TABLE IF EXISTS vec_messages",
+            """
+            CREATE VIRTUAL TABLE IF NOT EXISTS vec_messages USING vec0(
+                message_id INTEGER PRIMARY KEY,
+                embedding FLOAT[1536]
+            )
+            """,
+        ],
+    ),
 ]
 
-_VEC_MIGRATION: tuple[str, str] = (
-    "004_create_vec_messages",
-    """
-    CREATE VIRTUAL TABLE IF NOT EXISTS vec_messages USING vec0(
-        message_id INTEGER PRIMARY KEY,
-        embedding FLOAT[1536]
-    )
-    """,
-)
 
-
-def _get_migrations() -> list[tuple[str, str]]:
+def _get_migrations() -> list[tuple[str, str | list[str]]]:
     from amnesiac.config import settings
 
     if settings.sqlite_vec_enabled:
-        return _BASE_MIGRATIONS + [_VEC_MIGRATION]
-    return _BASE_MIGRATIONS
+        return _BASE_MIGRATIONS
+    # exclude only 006 (vec-dependent) when sqlite_vec is disabled
+    return _BASE_MIGRATIONS[:4]
 
 
 def get_connection(path: str | Path) -> sqlite3.Connection:
@@ -114,7 +129,11 @@ def apply_migrations(conn: sqlite3.Connection) -> None:
     for name, sql in _get_migrations():
         if name in applied:
             continue
-        conn.execute(sql)
+        if isinstance(sql, list):
+            for statement in sql:
+                conn.execute(statement)
+        else:
+            conn.execute(sql)
         conn.execute("INSERT INTO migrations (name) VALUES (?)", (name,))
         conn.commit()
         logger.info("Applied migration: %s", name)

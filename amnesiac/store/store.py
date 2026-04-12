@@ -79,6 +79,44 @@ def get_last_msg_id(conn: sqlite3.Connection, channel_id: int) -> int | None:
     return row[0]
 
 
+def insert_processed_message(
+    conn: sqlite3.Connection,
+    message_id: int,
+    processed_text: str,
+    is_valid: bool = True,
+) -> int:
+    conn.execute(
+        """
+        INSERT OR IGNORE INTO processed_messages (message_id, processed_text, is_valid)
+        VALUES (?, ?, ?)
+        """,
+        (message_id, processed_text, int(is_valid)),
+    )
+    conn.commit()
+    row = conn.execute(
+        "SELECT id FROM processed_messages WHERE message_id = ?", (message_id,)
+    ).fetchone()
+    return row[0]
+
+
+def get_unprocessed_messages(conn: sqlite3.Connection, batch_size: int = 500) -> list[dict]:
+    rows = conn.execute(
+        """
+        SELECT m.id, m.channel_id, m.text, m.date
+        FROM messages m
+        WHERE NOT EXISTS (
+            SELECT 1 FROM processed_messages pm WHERE pm.message_id = m.id
+        )
+        LIMIT ?
+        """,
+        (batch_size,),
+    ).fetchall()
+    return [
+        {"id": row[0], "channel_id": row[1], "text": row[2], "date": row[3]}
+        for row in rows
+    ]
+
+
 def insert_embeddings(conn: sqlite3.Connection, pairs: list[tuple[int, list[float]]]) -> None:
     from amnesiac.config import settings
 

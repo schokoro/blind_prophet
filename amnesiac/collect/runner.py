@@ -14,6 +14,13 @@ from amnesiac.store import apply_migrations, get_connection
 logger = logging.getLogger(__name__)
 
 
+def make_proxy(settings) -> tuple | None:
+    if settings.proxy_host:
+        import socks
+        return (socks.SOCKS5, settings.proxy_host, settings.proxy_port)
+    return None
+
+
 async def _scrape_account(
     client: TelegramClient,
     channels: list[str],
@@ -64,6 +71,7 @@ async def run_all(db_path: str | Path) -> None:
             account["session_file"],
             account["api_id"],
             account["api_hash"],
+            proxy=make_proxy(settings),
         )
         await client.connect()
 
