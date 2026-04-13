@@ -124,5 +124,28 @@ def login(
     print("Authorization successful. Account saved to config/accounts.yaml")
 
 
+@app.command()
+def embed(
+    db_path: Path = typer.Option(DEFAULT_DB_PATH, help="Path to SQLite database file"),
+    batch_size: int = typer.Option(0, help="Batch size (0 = use params.yaml value)"),
+    lead_sentences: int = typer.Option(0, help="Lead sentences (0 = use params.yaml value)"),
+) -> None:
+    """Preprocess messages and build embedding index."""
+    import yaml
+
+    from amnesiac.embed import run_embed
+
+    params = yaml.safe_load(Path("config/params.yaml").read_text())
+    preprocessing = params.get("preprocessing", {})
+
+    if batch_size == 0:
+        batch_size = preprocessing.get("embed_batch_size", 64)
+    if lead_sentences == 0:
+        lead_sentences = preprocessing.get("lead_sentences", 3)
+    min_text_length = preprocessing.get("min_text_length", 50)
+
+    asyncio.run(run_embed(db_path, batch_size, lead_sentences, min_text_length))
+
+
 if __name__ == "__main__":
     app()

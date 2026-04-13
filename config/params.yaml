@@ -9,3 +9,4 @@ proxy:
 preprocessing:
   lead_sentences: 3
   min_text_length: 50
+  embed_batch_size: 64
