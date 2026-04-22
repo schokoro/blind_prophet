@@ -9,4 +9,50 @@ proxy:
 preprocessing:
   lead_sentences: 3
   min_text_length: 50
-  embed_batch_size: 64
+  embed_batch_size: 256
+
+rag:
+  # Horizon: days before survey date to collect news
+  horizon_days: 14
+
+  # Top-K documents per axis (E04/S03: threshold-based selection doesn't work
+  # due to unimodal similarity distribution without a natural signal/noise gap)
+  top_k_per_axis: 50
+
+  # Exclude channels with non-narrative content (market briefs)
+  exclude_channels:
+    - prime1
+
+  # Near-duplicate deduplication threshold (E04/S04: cosine >= 0.9 are wire duplicates,
+  # confirmed by time_diff peak at 0-5 min and manual inspection of top pairs)
+  dedup_threshold: 0.9
+
+  # RAG query axes (E04/S03: 9 axes retained, зарплаты+труд kept separate)
+  axes:
+    дкп:
+      - "решение по ключевой ставке"
+      - "денежно-кредитная политика Банка России"
+    инфляция:
+      - "рост потребительских цен"
+      - "инфляция в России"
+    продовольствие:
+      - "цены на продукты питания"
+    курс:
+      - "курс рубля к доллару"
+      - "ослабление рубля"
+    тарифы:
+      - "повышение тарифов ЖКХ"
+      - "цены на бензин"
+    зарплаты:
+      - "рост зарплат"
+      - "реальные доходы населения"
+    труд:
+      - "дефицит кадров в России"
+      - "безработица в России"
+    кризис:
+      - "экономический кризис в России"
+      - "экономическая неопределённость"
+      - "санкции против России"
+    бюджет:
+      - "бюджетные расходы"
+      - "дефицит бюджета"
