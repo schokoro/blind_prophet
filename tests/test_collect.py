@@ -185,7 +185,7 @@ async def test_run_all_distributes_channels():
     async def fake_scrape(client, channel, conn, batch_size=200, inter_batch_sleep=1.0):
         scraped[client._session_file].append(channel)
 
-    def make_mock_client(session_file, api_id, api_hash):
+    def make_mock_client(session_file, api_id, api_hash, proxy=None):
         client_calls.append((session_file, api_id, api_hash))
         c = MagicMock()
         c._session_file = session_file

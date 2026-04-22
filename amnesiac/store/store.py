@@ -117,6 +117,61 @@ def get_unprocessed_messages(conn: sqlite3.Connection, batch_size: int = 500) ->
     ]
 
 
+def load_period(
+    conn: sqlite3.Connection,
+    date_from: str,
+    date_to: str,
+    exclude_channels: list[str] | None = None,
+) -> list[dict]:
+    """Load messages with embeddings for a given date range.
+
+    Returns a list of dicts with keys:
+        message_id, channel, date, processed_text, embedding_blob
+
+    embedding_blob is raw bytes (1536 float32, little-endian).
+    Deserialization to numpy is the caller's responsibility.
+
+    JOIN chain:
+        vec_messages.message_id -> processed_messages.id
+        processed_messages.message_id -> messages.id
+        messages.channel_id -> channels.id
+    """
+    sql = """
+        SELECT
+            pm.id           AS message_id,
+            ch.username     AS channel,
+            m.date          AS date,
+            pm.processed_text,
+            vm.embedding    AS embedding_blob
+        FROM vec_messages vm
+        JOIN processed_messages pm ON vm.message_id = pm.id
+        JOIN messages m ON pm.message_id = m.id
+        JOIN channels ch ON m.channel_id = ch.id
+        WHERE m.date BETWEEN ? AND ?
+          AND pm.is_valid = 1
+    """
+    params: list = [date_from, date_to]
+
+    if exclude_channels:
+        placeholders = ",".join("?" * len(exclude_channels))
+        sql += f" AND ch.username NOT IN ({placeholders})"
+        params.extend(exclude_channels)
+
+    sql += " ORDER BY m.date"
+
+    rows = conn.execute(sql, params).fetchall()
+    return [
+        {
+            "message_id": row[0],
+            "channel": row[1],
+            "date": row[2],
+            "processed_text": row[3],
+            "embedding_blob": row[4],
+        }
+        for row in rows
+    ]
+
+
 def insert_embeddings(conn: sqlite3.Connection, pairs: list[tuple[int, list[float]]]) -> None:
     from amnesiac.config import settings
 
