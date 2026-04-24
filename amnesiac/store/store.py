@@ -191,3 +191,15 @@ def insert_embeddings(conn: sqlite3.Connection, pairs: list[tuple[int, list[floa
         [(mid, _sqlite_vec.serialize_float32(vec)) for mid, vec in pairs],
     )
     conn.commit()
+
+
+def insert_summary(conn, run_date: str, summary: str, doc_count: int, model: str) -> None:
+    """Insert or replace summary for run_date."""
+    conn.execute(
+        """
+        INSERT OR REPLACE INTO summaries (run_date, summary, doc_count, model)
+        VALUES (?, ?, ?, ?)
+        """,
+        (run_date, summary, doc_count, model),
+    )
+    conn.commit()
