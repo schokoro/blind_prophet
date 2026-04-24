@@ -1,3 +1,4 @@
+from pydantic import Field
 from pydantic_settings import BaseSettings
 
 
@@ -15,6 +16,7 @@ class Settings(BaseSettings):
 
     proxy_host: str = ""
     proxy_port: int = 1080
+    rag: dict = Field(default_factory=dict)
 
     model_config = {"env_file": ".env", "extra": "ignore"}
 
@@ -36,6 +38,8 @@ class Settings(BaseSettings):
                     self.proxy_host = proxy.get("host", self.proxy_host)
                 if "proxy_port" not in self.model_fields_set:
                     self.proxy_port = proxy.get("port", self.proxy_port)
+                if "rag" not in self.model_fields_set:
+                    self.rag = data.get("rag", self.rag)
         except Exception:
             pass
 
