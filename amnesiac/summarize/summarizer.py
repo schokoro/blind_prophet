@@ -1,4 +1,5 @@
 import asyncio
+import time
 
 from amnesiac.summarize.retriever import format_for_prompt
 
@@ -70,6 +71,7 @@ META_USER = """Тематические таймлайны:
 
 async def summarize_axis(client, axis: str, docs: list[dict], model: str, horizon_days: int) -> str:
     """Run axis summarization. Returns summary text."""
+    t = time.time()
     formatted = format_for_prompt(docs)
     response = await client.chat.completions.create(
         model=model,
@@ -79,6 +81,7 @@ async def summarize_axis(client, axis: str, docs: list[dict], model: str, horizo
         ],
         temperature=0.3,
     )
+    print(f"{axis}: {time.time() - t:.1f}s")
     return response.choices[0].message.content
 
 
@@ -88,6 +91,7 @@ async def summarize_meta(client, axis_summaries: dict[str, str], model: str) -> 
         f"=== Ось: {axis} ===\n\n{summary}"
         for axis, summary in axis_summaries.items()
     )
+    t = time.time()
     response = await client.chat.completions.create(
         model=model,
         messages=[
@@ -96,6 +100,7 @@ async def summarize_meta(client, axis_summaries: dict[str, str], model: str) -> 
         ],
         temperature=0.3,
     )
+    print(f"\tmeta: {time.time() - t:.1f}s")
     return response.choices[0].message.content
 
 

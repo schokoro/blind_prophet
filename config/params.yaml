@@ -15,7 +15,7 @@ rag:
   # Horizon: days before survey date to collect news
   horizon_days: 14
 
-  summarize_model: "deepseek/deepseek-v4-pro"  # "deepseek/deepseek-v3.2"
+  summarize_model: "deepseek/deepseek-v4-flash"  # "qwen/qwen3.5-122b-a10b"  ## "deepseek/deepseek-v4-pro"  # "qwen/qwen3.5-397b-a17b"  # "deepseek/deepseek-v3.2"  #
 
   # Top-K documents per axis (E04/S03: threshold-based selection doesn't work
   # due to unimodal similarity distribution without a natural signal/noise gap)
