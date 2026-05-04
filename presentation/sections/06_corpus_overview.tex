@@ -1,2 +1,89 @@
-\begin{frame}{Data / corpus overview}
+\begin{frame}[plain]
+  \begingroup
+  \definecolor{BPRed}{HTML}{C0392B}
+  \definecolor{BPOrange}{HTML}{E07030}
+
+  \begin{tikzpicture}[remember picture,overlay,x=0.1666667mm,y=-0.1666667mm]
+    \begin{scope}[shift={(current page.north west)}]
+
+      \slideheader{Данные: корпус}
+
+      \node[anchor=north west, inner sep=0pt] at (48,114) {%
+        \begin{minipage}{80mm}
+          \setlength{\parindent}{0pt}
+          \renewcommand{\arraystretch}{1.12}
+          \setlength{\tabcolsep}{2.9pt}
+          {\fontsize{6.55}{7.7}\selectfont
+          \begin{tabular*}{\linewidth}{@{\extracolsep{\fill}}lrr@{}}
+            {\textcolor{BPMuted}{\fontsize{5.8}{6.8}\selectfont\scshape Канал}} &
+            {\textcolor{BPMuted}{\fontsize{5.8}{6.8}\selectfont\scshape Собрано}} &
+            {\textcolor{BPMuted}{\fontsize{5.8}{6.8}\selectfont\scshape После фильтрации}} \\
+            \midrule
+            ТАСС & {\addfontfeatures{Numbers=Tabular}349 277} & {\addfontfeatures{Numbers=Tabular}300 677} \\
+            РИА Новости & {\addfontfeatures{Numbers=Tabular}304 413} & {\addfontfeatures{Numbers=Tabular}249 704} \\
+            РБК. Новости. Главное & {\addfontfeatures{Numbers=Tabular}129 465} & {\addfontfeatures{Numbers=Tabular}70 459} \\
+            Коммерсантъ & {\addfontfeatures{Numbers=Tabular}94 440} & {\addfontfeatures{Numbers=Tabular}52 333} \\
+            ВЕДОМОСТИ & {\addfontfeatures{Numbers=Tabular}70 169} & {\addfontfeatures{Numbers=Tabular}56 160} \\
+            Интерфакс & {\addfontfeatures{Numbers=Tabular}61 838} & {\addfontfeatures{Numbers=Tabular}38 646} \\
+            Фонтанка SPB Online & {\addfontfeatures{Numbers=Tabular}61 398} & {\addfontfeatures{Numbers=Tabular}43 807} \\
+            Регнум & {\addfontfeatures{Numbers=Tabular}24 447} & {\addfontfeatures{Numbers=Tabular}13 985} \\
+            Интерфакс. Рынки & {\addfontfeatures{Numbers=Tabular}20 812} & {\addfontfeatures{Numbers=Tabular}19 292} \\
+            Frank Media & {\addfontfeatures{Numbers=Tabular}19 682} & {\addfontfeatures{Numbers=Tabular}14 467} \\
+            Банк России & {\addfontfeatures{Numbers=Tabular}2 608} & {\addfontfeatures{Numbers=Tabular}2 001} \\
+            \textcolor{BPLine}{ПРАЙМ
+              \tikz[baseline=-0.45ex]\node[
+                fill=BPAccentFill,
+                draw=BPAccent!45,
+                rounded corners=0.6mm,
+                inner xsep=1.1mm,
+                inner ysep=0.25mm,
+                text=BPAccent,
+                font=\fontsize{4.6}{5.5}\selectfont
+              ] {исключён};} &
+            {\textcolor{BPLine}{\addfontfeatures{Numbers=Tabular}149 684}} &
+            {\textcolor{BPLine}{---}} \\
+            \midrule
+            \textcolor{BPBlue}{\textbf{Всего}} &
+            {\textcolor{BPBlue}{\textbf{\addfontfeatures{Numbers=Tabular}1 288 233}}} &
+            {\textcolor{BPBlue}{\textbf{\addfontfeatures{Numbers=Tabular}861 531}}}
+          \end{tabular*}}
+        \end{minipage}
+      };
+
+      \begin{scope}[
+        shift={(590,134)},
+        tlitem/.style={
+          anchor=west,
+          inner sep=0pt,
+          align=left,
+          text width=48mm
+        }
+      ]
+        \node[anchor=west, inner sep=0pt, text=BPMuted,
+          font=\fontsize{6.0}{7.2}\selectfont\scshape]
+          at (0,0) {Характерные точки};
+
+        \draw[BPLine, line width=0.35mm] (12,40) -- (12,284);
+
+        \foreach \y/\dotcolor/\year/\tlname/\desc in {
+          45/BPMuted/{2021}/{Спокойный период}/{Низкая волатильность — опорная точка для валидации метода},
+          125/BPOrange/{2020 Q1–Q2}/{Ковидный шок}/{Разрыв цепочек поставок, обвал рубля, неопределённость},
+          205/BPRed/{02.2022}/{Санкционный шок}/{Санкции, валютный кризис, ставка ЦБ до 20\%},
+          285/BPAccent/{2023–2024}/{Цикл ужесточения}/{Ставка ЦБ 7,5\% \(\to\) 21\%, устойчивое инфляционное давление}
+        } {
+          \fill[white] (12,\y) circle[radius=5.0];
+          \draw[\dotcolor, line width=0.45mm] (12,\y) circle[radius=5.0];
+          \node[tlitem] at (34,\y-8) {%
+            {\textcolor{BPMuted}{\fontsize{5.8}{7.0}\selectfont \year}}\par
+            {\textcolor{BPText}{\fontsize{6.8}{8.1}\selectfont\bfseries \tlname}}\par
+            {\textcolor{BPMuted}{\fontsize{5.9}{7.2}\selectfont \desc}}%
+          };
+        }
+      \end{scope}
+
+      \slidefooter{Сергей Устьянцев}{Извлечение сигнала инфляционных ожиданий из новостного потока с контролем утечки будущих данных}
+
+    \end{scope}
+  \end{tikzpicture}
+  \endgroup
 \end{frame}
