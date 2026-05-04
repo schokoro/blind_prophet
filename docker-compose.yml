@@ -9,13 +9,10 @@ services:
       - "127.0.0.1:7997:7997"
     volumes:
       - huggingface_cache:/app/.cache/huggingface
-    deploy:
-      resources:
-        reservations:
-          devices:
-            - driver: nvidia
-              count: 1
-              capabilities: [gpu]
+    devices:
+      - "nvidia.com/gpu=all"
+    environment:
+      NVIDIA_DRIVER_CAPABILITIES: compute,utility
     networks:
       - avatar-net
     healthcheck:
