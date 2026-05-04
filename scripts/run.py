@@ -147,5 +147,17 @@ def embed(
     asyncio.run(run_embed(db_path, batch_size, lead_sentences, min_text_length))
 
 
+@app.command()
+def summarize(
+    date: str = typer.Option(..., help="Survey date (YYYY-MM-DD), e.g. 2021-10-20"),
+    db_path: Path = typer.Option(DEFAULT_DB_PATH, help="Path to SQLite database file"),
+    force: bool = typer.Option(False, "--force", help="Overwrite existing summary for this date"),
+) -> None:
+    """Summarize news corpus for a given survey date and store result in DB."""
+    from amnesiac.summarize.runner import run_summarize_pipeline
+
+    asyncio.run(run_summarize_pipeline(db_path, date, force=force))
+
+
 if __name__ == "__main__":
     app()

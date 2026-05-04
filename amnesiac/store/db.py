@@ -78,6 +78,20 @@ _BASE_MIGRATIONS: list[tuple[str, str | list[str]]] = [
             """,
         ],
     ),
+    (
+        "007_create_summaries",
+        """
+        CREATE TABLE IF NOT EXISTS summaries (
+            id          INTEGER PRIMARY KEY,
+            run_date    TEXT NOT NULL,
+            summary     TEXT NOT NULL,
+            doc_count   INTEGER,
+            model       TEXT,
+            created_at  TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            UNIQUE(run_date)
+        )
+        """,
+    ),
 ]
 
 
@@ -87,7 +101,7 @@ def _get_migrations() -> list[tuple[str, str | list[str]]]:
     if settings.sqlite_vec_enabled:
         return _BASE_MIGRATIONS
     # exclude only 006 (vec-dependent) when sqlite_vec is disabled
-    return _BASE_MIGRATIONS[:4]
+    return _BASE_MIGRATIONS[:4] + _BASE_MIGRATIONS[5:]
 
 
 def get_connection(path: str | Path) -> sqlite3.Connection:

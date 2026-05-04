@@ -6,6 +6,7 @@ from .store import (
     insert_embeddings,
     insert_messages,
     insert_processed_message,
+    insert_summary,
     upsert_account,
     upsert_channel,
 )
@@ -19,6 +20,7 @@ __all__ = [
     "get_last_msg_id",
     "insert_embeddings",
     "insert_processed_message",
+    "insert_summary",
     "get_unprocessed_messages",
     "embed_documents",
     "embed_query",
