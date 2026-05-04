@@ -1,0 +1,27 @@
+\newcommand{\runDate}{\texttt{run\_date}}
+\newcommand{\inFOM}{инФОМ}
+\newcommand{\leadSentences}{first 3 sentences}
+
+\newcommand{\takeaway}[1]{%
+  \vfill
+  \begin{center}
+    \color{BPAccent}\textbf{#1}
+  \end{center}
+}
+
+\newcommand{\MethodPipeline}[6]{%
+  \begin{tikzpicture}[x=1cm,y=1cm]
+    \node[#1] (sources) at (0.0,0) {\textbf{Telegram}\\\tiny channel posts};
+    \node[#2] (retrieve) at (2.3,0) {\textbf{Retrieve}\\\tiny around \runDate};
+    \node[#3] (summary) at (4.6,0) {\textbf{RAG summary}\\\tiny \leadSentences};
+    \node[#4] (neuter) at (6.9,0) {\textbf{Entity}\\\textbf{neutering}\\\tiny names $\to$ roles};
+    \node[#5] (survey) at (9.2,0) {\textbf{LLM survey}\\\tiny emulate \inFOM};
+    \node[#6] (forecast) at (11.5,0) {\textbf{Forecast}\\\tiny expectation index};
+
+    \draw[pipearrow] (sources.east) -- (retrieve.west);
+    \draw[pipearrow] (retrieve.east) -- (summary.west);
+    \draw[pipearrow] (summary.east) -- (neuter.west);
+    \draw[pipearrow] (neuter.east) -- (survey.west);
+    \draw[pipearrow] (survey.east) -- (forecast.west);
+  \end{tikzpicture}%
+}

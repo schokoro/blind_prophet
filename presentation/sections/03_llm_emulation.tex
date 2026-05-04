@@ -1,0 +1,109 @@
+\begin{frame}[plain]
+  \begin{tikzpicture}[remember picture,overlay,x=0.1666667mm,y=-0.1666667mm]
+    \begin{scope}[shift={(current page.north west)}]
+      \slideheader{Эмуляция опроса с помощью LLM}
+
+      \draw[
+        draw=BPLine,
+        fill=BPLight,
+        dashed,
+        dash pattern=on 1.4mm off 0.9mm,
+        line width=0.25mm,
+        rounded corners=1.33mm
+      ] (160,105) rectangle (440,157);
+      \node[
+        anchor=center,
+        inner sep=0pt,
+        text=BPText,
+        font=\fontsize{11.5}{13}\selectfont\bfseries
+      ] at (300,131) {LLM-респонденты};
+
+      \draw[
+        draw=BPBlue,
+        line width=0.33mm,
+        -{Triangle[length=1.17mm,width=1.67mm]}
+      ] (300,157) -- (300,191);
+
+      \draw[
+        draw=BPBlue,
+        fill=white,
+        line width=0.25mm,
+        rounded corners=1.33mm
+      ] (160,191) rectangle (440,243);
+      \node[
+        anchor=center,
+        inner sep=0pt,
+        text=BPText,
+        align=center
+      ] at (300,217) {\resizebox{39mm}{!}{Индивидуальные оценки}};
+
+      \draw[
+        draw=BPBlue,
+        line width=0.33mm,
+        -{Triangle[length=1.17mm,width=1.67mm]}
+      ] (300,243) -- (300,283);
+
+      \draw[
+        draw=BPBlue,
+        fill=white,
+        line width=0.25mm,
+        rounded corners=1.33mm
+      ] (160,283) rectangle (440,335);
+      \node[
+        anchor=center,
+        inner sep=0pt,
+        text=BPText,
+        align=center
+      ] at (300,309) {\resizebox{19mm}{!}{Агрегация}};
+
+      \draw[
+        draw=BPBlue,
+        line width=0.33mm,
+        -{Triangle[length=1.17mm,width=1.67mm]}
+      ] (300,335) -- (300,375);
+
+      \draw[
+        draw=BPBlue,
+        fill=white,
+        line width=0.25mm,
+        rounded corners=1.33mm
+      ] (160,375) rectangle (440,439);
+      \node[
+        anchor=center,
+        inner sep=0pt,
+        text=BPText,
+        align=center
+      ] at (300,407) {\resizebox{40mm}{!}{\shortstack{Медианная ожидаемая\\инфляция (12 месяцев)}}};
+
+      \draw[
+        draw=BPLine,
+        fill=white,
+        line width=0.25mm,
+        rounded corners=1.33mm
+      ] (670,228) rectangle (900,324);
+      \node[
+        anchor=north west,
+        inner sep=0pt,
+        text=BPText,
+        font=\fontsize{9}{11}\selectfont\bfseries
+      ] at (684,240) {Выход:};
+      \node[
+        anchor=north west,
+        inner sep=0pt,
+        text=BPMuted,
+        font=\fontsize{8.0}{9.8}\selectfont,
+        align=left
+      ] at (684,254) {\shortstack[l]{оценка инфляционных\\ожиданий (медиана)}};
+
+      \node[
+        anchor=south,
+        inner sep=0pt,
+        text=BPBlue,
+        font=\fontsize{9.75}{11.5}\selectfont\bfseries,
+        align=center
+      ] at (480,499) {Респонденты $\rightarrow$ LLM-респонденты};
+
+      \slidefooter{Сергей Устьянцев}{Извлечение сигнала инфляционных ожиданий из новостного потока с контролем утечки будущих данных}
+    \end{scope}
+  \end{tikzpicture}
+\end{frame}

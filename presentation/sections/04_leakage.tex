@@ -1,0 +1,48 @@
+\begin{frame}[plain]
+  \begin{tikzpicture}[remember picture,overlay,x=0.1666667mm,y=-0.1666667mm]
+    \begin{scope}[shift={(current page.north west)}]
+
+      \node[anchor=south west, inner sep=0pt, xshift=8.0mm] at (current page.south west) {%
+        \includegraphics[width=136mm,height=76.5mm]{images/themis_2}%
+      };
+
+      \slideheader{Look-ahead leakage}
+
+      % LLM training data — two arrows with label between
+      \draw[BPLine, line width=0.4mm,
+          {Latex[length=2.4mm,width=1.8mm]}-]
+      (380,240) -- (540,240);
+      \draw[BPLine, line width=0.4mm,
+        -{Latex[length=2.4mm,width=1.8mm]}]
+      (690,240) -- (850,240);
+      \node[anchor=south, inner sep=0pt,
+        text=BPLine, font=\fontsize{7.5}{9}\selectfont]
+      at (615,248) {LLM training data};
+
+      % leak arrow
+      \definecolor{LeakColor}{HTML}{993C1D}
+      \draw[dashed, LeakColor, line width=0.3mm,
+        {Latex[length=2.4mm,width=1.8mm]}-]
+      (600,355) -- (850,355);
+      \node[anchor=south, inner sep=0pt,
+        text=LeakColor, font=\fontsize{8}{9.5}\selectfont\itshape]
+      at (745,380) {leak};
+
+      % survey label (below timeline)
+      \node[anchor=north, inner sep=0pt,
+        text=BPBlue, font=\fontsize{8}{9.5}\selectfont\bfseries]
+      at (650,280) {опрос};
+
+      % context bracket (dot2=500 → dot4=672, 20px below timeline)
+      \draw[BPBlue, line width=0.5mm] (522,315) -- (655,315);
+      \draw[BPBlue, line width=0.5mm] (522,310) -- (522,320);
+      \draw[BPBlue, line width=0.5mm] (655,310) -- (655,320);
+      \node[anchor=north, inner sep=0pt,
+        text=BPBlue, font=\fontsize{7}{8.5}\selectfont]
+      at (590,325) {контекст (2 нед.)};
+
+      \slidefooter{Сергей Устьянцев}{Извлечение сигнала инфляционных ожиданий из новостного потока с контролем утечки будущих данных}
+
+    \end{scope}
+  \end{tikzpicture}
+\end{frame}

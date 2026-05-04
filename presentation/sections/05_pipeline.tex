@@ -1,0 +1,48 @@
+\begin{frame}[plain]
+  \begin{tikzpicture}[remember picture,overlay,x=0.1666667mm,y=-0.1666667mm]
+    \begin{scope}[shift={(current page.north west)}]
+
+      \slideheader{Пайплайн исследования}
+
+      % ── Источники (dashed box centered above Corpus block) ──────────────
+      \node[pipedashed, align=center, minimum width=2.0cm]
+        (sources) at (140,195) {%
+          \textbf{Источники}\\[0.5mm]%
+          \textcolor{BPMuted}{\fontsize{7.5}{9}\selectfont 12 Telegram-каналов}\\[1mm]%
+          \textcolor{BPMuted}{\fontsize{7}{8.4}\selectfont ТАСС · РБК · РИА}\\[0.1mm]%
+          \textcolor{BPMuted}{\fontsize{7}{8.4}\selectfont Коммерсант · ещё 8}%
+      };
+
+      % ── Pipeline blocks ─────────────────────────────────────────────────
+      \node[pipecorpus, align=center] (corpus) at (140,330) {%
+        \textbf{Корпус}\\[1mm]SQLite-vec · FRIDA%
+      };
+      \node[pipesample, align=center] (sample) at (305,330) {%
+        \textbf{Сэмплинг}\\[1mm]окно 2 нед.%
+      };
+      \node[pipesumm, align=center] (summ) at (480,330) {%
+        \textbf{Суммаризация}\\[1mm]top-K RAG · LLM%
+      };
+      \node[pipeactive, align=center] (active) at (655,330) {%
+        \textbf{Нейтрализация}\\[1mm]агентный цикл%
+      };
+      \node[pipeforecast, align=center] (forecast) at (815,330) {%
+        \textbf{Прогноз /}\\[0.5mm]\textbf{оценка}\\[1mm]LLM $\rightarrow$ ИО%
+      };
+
+      % ── Arrows ──────────────────────────────────────────────────────────
+      \draw[pipearrow] (sources.south) -- (corpus.north);
+      \draw[pipearrow] (corpus.east)   -- (sample.west);
+      \draw[pipearrow] (sample.east)   -- (summ.west);
+      \draw[pipearrow] (summ.east)     -- (active.west);
+      \draw[pipearrow] (active.east)   -- (forecast.west);
+
+      % ── Caption ─────────────────────────────────────────────────────────
+      \node[anchor=north, inner sep=0pt, text=BPMuted, font=\small\itshape]
+        at (480,410) {«От новостного корпуса к прогнозу инфляционных ожиданий»};
+
+      \slidefooter{Сергей Устьянцев}{Извлечение сигнала инфляционных ожиданий из новостного потока с контролем утечки будущих данных}
+
+    \end{scope}
+  \end{tikzpicture}
+\end{frame}
