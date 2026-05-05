@@ -104,6 +104,26 @@ _BASE_MIGRATIONS: list[tuple[str, str | list[str]]] = [
         )
         """,
     ),
+    (
+        "009_create_neutered_summaries",
+        """
+        CREATE TABLE IF NOT EXISTS neutered_summaries (
+            run_date                  TEXT PRIMARY KEY,
+            summary                   TEXT NOT NULL,
+            neutering_status          TEXT NOT NULL,
+            final_iteration           INTEGER,
+            q3_preservation           REAL,
+            raw_period_id_score       REAL,
+            neutered_period_id_score  REAL,
+            period_delta_vs_raw       REAL,
+            judge_blind               INTEGER,
+            model_n                   TEXT,
+            model_j1                  TEXT,
+            model_j2                  TEXT,
+            created_at                TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )
+        """,
+    ),
 ]
 
 

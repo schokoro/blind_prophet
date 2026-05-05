@@ -159,5 +159,17 @@ def summarize(
     asyncio.run(run_summarize_pipeline(db_path, date, force=force))
 
 
+@app.command()
+def neuter(
+    date: str = typer.Option(..., help="Survey date (YYYY-MM-DD), e.g. 2021-10-20"),
+    db_path: Path = typer.Option(DEFAULT_DB_PATH, help="Path to SQLite database file"),
+    force: bool = typer.Option(False, "--force", help="Overwrite existing neutered_summaries row"),
+) -> None:
+    """Run the neutering pipeline for a given run_date and store result in DB."""
+    from amnesiac.neuter.runner import run_neuter_pipeline
+
+    asyncio.run(run_neuter_pipeline(db_path, date, force=force))
+
+
 if __name__ == "__main__":
     app()
