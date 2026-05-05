@@ -1,0 +1,134 @@
+% Вспомогательные команды и TikZ-стили проекта
+
+% --- tcolorbox ---
+\newtcolorbox{newsbox}{
+  colback=BPLight,
+  colframe=BPLight,
+  boxrule=0pt,
+  arc=2mm,
+  left=2mm,
+  right=2mm,
+  top=1mm,
+  bottom=1mm,
+  fontupper=\small
+}
+
+% --- Inline-акценты ---
+\newcommand{\lead}[1]{\textcolor{BPBlue}{#1}}
+\newcommand{\tail}[1]{\textcolor{BPMuted}{#1}}
+
+% --- Общие стили блоков пайплайна ---
+\tikzset{
+  % Базовый блок (нейтральный)
+  pipebox/.style={
+    draw=BPGray,
+    fill=BPGrayFill,
+    rounded corners=2mm,
+    minimum width=2.0cm,
+    minimum height=1.6cm,
+    inner sep=2.5mm,
+    align=center,
+    font=\scriptsize,
+    text=BPText
+  },
+  % Корпус
+  pipecorpus/.style={
+    pipebox,
+    draw=BPTeal,
+    fill=BPTealFill,
+    text=BPTeal
+  },
+  % Сэмплинг — нейтральный, наследует pipebox
+  pipesample/.style={
+    pipebox
+  },
+  % Суммаризация
+  pipesumm/.style={
+    pipebox,
+    draw=BPSkyBorder,
+    fill=BPSkyFill,
+    text=BPText
+  },
+  % Нейтрализация — главный вклад
+  pipeactive/.style={
+    pipebox,
+    draw=BPAccent,
+    fill=BPAccentFill,
+    text=BPAccent,
+    line width=0.9pt
+  },
+  % Прогноз / оценка
+  pipeforecast/.style={
+    pipebox,
+    draw=BPNavy,
+    fill=BPNavyFill,
+    text=BPNavy
+  },
+  % Пунктирный блок (Источники / Респонденты)
+  pipedashed/.style={
+    pipebox,
+    draw=BPLine,
+    fill=BPLight,
+    text=BPText,
+    dashed
+  },
+  % Приглушённый блок (неактивный шаг)
+  pipemuted/.style={
+    pipebox,
+    draw=BPMuted!60,
+    fill=BPLight,
+    text=BPMuted
+  },
+  % Стрелка между блоками
+  pipearrow/.style={
+    -{Latex[length=2.2mm,width=1.6mm]},
+    draw=BPBlue,
+    line width=0.8pt
+  },
+  % Стрелка приглушённая (вертикальные флоу-диаграммы)
+  pipearrowmuted/.style={
+    -{Latex[length=2.2mm,width=1.6mm]},
+    draw=BPMuted,
+    line width=0.8pt
+  }
+}
+
+% --- Слайд-макет: хедер и футер (plain-фреймы) ---
+% Использование: \slideheader{Заголовок слайда}
+\newcommand{\slideheader}[1]{%
+  \draw[BPBlue, line width=0.33mm] (0,86) -- (960,86);
+  \pgfmathsetmacro{\progressx}{48 + 864 * \insertframenumber / \inserttotalframenumber}
+  \fill[BPBlue, rounded corners=0.33mm] (48,67) rectangle (\progressx,70);
+  \node[anchor=north west, inner sep=0pt, text=BPBlue]
+    at (48,28) {\adjustbox{max width=144mm}{\fontsize{17}{21}\selectfont\bfseries #1}};
+}
+
+% \slidefooter{Имя автора}{Заголовок презентации}
+\newcommand{\slidefooter}[2]{%
+  \draw[BPFooter, line width=0.17mm] (0,510) -- (960,510);
+  \node[anchor=west, inner sep=0pt, text=BPBlue,
+    font=\fontsize{8.25}{10}\selectfont\bfseries]
+    at (48,525) {#1};
+  \node[anchor=west, inner sep=0pt, text=BPMuted, align=center]
+    at (220,525) {\resizebox{112mm}{!}{#2}};
+  \node[anchor=east, inner sep=0pt, text=BPMuted,
+    font=\fontsize{8.25}{10}\selectfont]
+    at (912,525) {\insertframenumber};
+}
+
+\setbeamertemplate{frametitle}{%
+  \begin{tikzpicture}[remember picture,overlay,x=0.1666667mm,y=-0.1666667mm]
+    \begin{scope}[shift={(current page.north west)}]
+      \slideheader{\insertframetitle}
+    \end{scope}
+  \end{tikzpicture}%
+}
+
+\setbeamertemplate{footline}{%
+  \begin{tikzpicture}[remember picture,overlay,x=0.1666667mm,y=-0.1666667mm]
+    \begin{scope}[shift={(current page.north west)}]
+      \slidefooter{Сергей Устьянцев}{Извлечение сигнала инфляционных ожиданий из новостного потока с контролем утечки будущих данных}
+    \end{scope}
+  \end{tikzpicture}%
+  \vspace{7mm}%
+}
