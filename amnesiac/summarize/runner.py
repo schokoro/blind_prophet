@@ -24,6 +24,7 @@ async def run_summarize_pipeline(db_path, run_date: str, force: bool = False) ->
         client = AsyncOpenAI(
             base_url=OPENROUTER_BASE_URL,
             api_key=os.environ["OPENROUTER_API_KEY"],
+            timeout=600.0,
         )
         model = settings.rag["summarize_model"]
         horizon_days = int(settings.rag["horizon_days"])

@@ -1,7 +1,14 @@
 import asyncio
+import json
+import logging
 import time
 
+import httpx
+from openai import APIConnectionError, APITimeoutError
+
 from amnesiac.summarize.retriever import format_for_prompt
+
+logger = logging.getLogger(__name__)
 
 AXIS_SYSTEM = """Ты — экономический аналитик. Твоя задача — составить структурированный таймлайн событий по одной конкретной тематической оси из потока новостных сообщений.
 
@@ -72,17 +79,64 @@ META_USER = """Тематические таймлайны:
 Собери единый нарративный таймлайн по смысловым узлам."""
 
 
+async def _call_with_retry(coro_factory, axis_name: str, max_attempts: int = 3):
+    """
+    Run an OpenRouter request with retries for transient provider failures.
+
+    coro_factory must return a fresh coroutine on every call.
+    """
+    retry_delays = [5, 15, 45]
+    retryable_errors = (
+        json.JSONDecodeError,
+        httpx.ReadTimeout,
+        httpx.RemoteProtocolError,
+        APIConnectionError,
+        APITimeoutError,
+    )
+    last_error = None
+
+    for attempt in range(1, max_attempts + 1):
+        try:
+            logger.info("OpenRouter request attempt %s/%s for axis %s", attempt, max_attempts, axis_name)
+            return await coro_factory()
+        except retryable_errors as exc:
+            last_error = exc
+            if attempt >= max_attempts:
+                logger.exception(
+                    "OpenRouter request failed after %s attempts for axis %s",
+                    max_attempts,
+                    axis_name,
+                )
+                raise
+
+            delay = retry_delays[min(attempt - 1, len(retry_delays) - 1)]
+            logger.warning(
+                "OpenRouter request failed for axis %s on attempt %s/%s: %r; retrying in %ss",
+                axis_name,
+                attempt,
+                max_attempts,
+                exc,
+                delay,
+            )
+            await asyncio.sleep(delay)
+
+    raise last_error
+
+
 async def summarize_axis(client, axis: str, docs: list[dict], model: str, horizon_days: int) -> str:
     """Run axis summarization. Returns summary text."""
     t = time.time()
     formatted = format_for_prompt(docs)
-    response = await client.chat.completions.create(
-        model=model,
-        messages=[
-            {"role": "system", "content": AXIS_SYSTEM.format(axis=axis, horizon_days=horizon_days)},
-            {"role": "user", "content": AXIS_USER.format(axis=axis, docs=formatted)},
-        ],
-        temperature=0.3,
+    response = await _call_with_retry(
+        lambda: client.chat.completions.create(
+            model=model,
+            messages=[
+                {"role": "system", "content": AXIS_SYSTEM.format(axis=axis, horizon_days=horizon_days)},
+                {"role": "user", "content": AXIS_USER.format(axis=axis, docs=formatted)},
+            ],
+            temperature=0.3,
+        ),
+        axis,
     )
     print(f"{axis}: {time.time() - t:.1f}s")
     return response.choices[0].message.content
@@ -114,11 +168,29 @@ async def run_summarize(
     horizon_days: int,
 ) -> str:
     """Full two-stage summarization pipeline. Returns meta summary text."""
-    summaries = await asyncio.gather(
-        *(
-            summarize_axis(client, axis, docs, model, horizon_days)
-            for axis, docs in retrieved.items()
-        )
+    semaphore = asyncio.Semaphore(5)
+
+    async def bounded_axis(axis, docs):
+        async with semaphore:
+            return await summarize_axis(client, axis, docs, model, horizon_days)
+
+    axes = list(retrieved.keys())
+    results = await asyncio.gather(
+        *(bounded_axis(axis, retrieved[axis]) for axis in axes),
+        return_exceptions=True,
     )
-    axis_summaries = dict(zip(retrieved.keys(), summaries))
+
+    failed = [(axes[i], r) for i, r in enumerate(results) if isinstance(r, Exception)]
+    succeeded = {axes[i]: r for i, r in enumerate(results) if not isinstance(r, Exception)}
+
+    if len(failed) >= 3:
+        failed_names = ", ".join(name for name, _ in failed)
+        raise RuntimeError(f"Too many axis failures ({len(failed)}/9): {failed_names}")
+    if failed:
+        failed_names = ", ".join(name for name, _ in failed)
+        logger.warning("Axis failed but continuing: %s", failed_names)
+        for name, _ in failed:
+            succeeded[name] = "(нет данных по оси из-за ошибки провайдера)"
+
+    axis_summaries = {axis: succeeded[axis] for axis in axes}
     return await summarize_meta(client, axis_summaries, model)
