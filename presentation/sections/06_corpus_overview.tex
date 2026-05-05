@@ -51,33 +51,36 @@
       };
 
       \begin{scope}[
-        shift={(590,134)},
+        shift={(555,104)},
         tlitem/.style={
-          anchor=west,
+          anchor=north west,
           inner sep=0pt,
-          align=left,
-          text width=48mm
+          align=flush left,
+          text width=52mm
         }
       ]
         \node[anchor=west, inner sep=0pt, text=BPMuted,
           font=\fontsize{6.0}{7.2}\selectfont\scshape]
           at (0,0) {Характерные точки};
 
-        \draw[BPLine, line width=0.35mm] (12,40) -- (12,284);
+        \draw[BPLine, line width=0.35mm] (12,40) -- (12,370);
 
         \foreach \y/\dotcolor/\year/\tlname/\desc in {
-          45/BPMuted/{2021}/{Спокойный период}/{Низкая волатильность — опорная точка для валидации метода},
-          125/BPOrange/{2020 Q1–Q2}/{Ковидный шок}/{Разрыв цепочек поставок, обвал рубля, неопределённость},
-          205/BPRed/{02.2022}/{Санкционный шок}/{Санкции, валютный кризис, ставка ЦБ до 20\%},
-          285/BPAccent/{2023–2024}/{Цикл ужесточения}/{Ставка ЦБ 7,5\% \(\to\) 21\%, устойчивое инфляционное давление}
+          40/BPMuted/{2021}/{Спокойный период}/{Низкая волатильность, нет внешних шоков},
+          150/BPOrange/{2020 Q1–Q2}/{Ковидный шок}/{Обвал рубля, разрыв цепочек поставок},
+          260/BPRed/{02.2022}/{Санкционный шок}/{Санкции, валютный кризис, ставка ЦБ 20\%},
+          370/BPAccent/{2023–2024}/{Цикл ужесточения}/{Ставка ЦБ 7,5\% \(\to\) 21\%, инфляционное давление}
         } {
           \fill[white] (12,\y) circle[radius=5.0];
           \draw[\dotcolor, line width=0.45mm] (12,\y) circle[radius=5.0];
+          \node[tlitem] at (34,\y-26) {%
+            \textcolor{BPMuted}{\fontsize{5.8}{7.0}\selectfont \year}};
           \node[tlitem] at (34,\y-8) {%
-            {\textcolor{BPMuted}{\fontsize{5.8}{7.0}\selectfont \year}}\par
-            {\textcolor{BPText}{\fontsize{6.8}{8.1}\selectfont\bfseries \tlname}}\par
-            {\textcolor{BPMuted}{\fontsize{5.9}{7.2}\selectfont \desc}}%
-          };
+            \textcolor{BPText}{\fontsize{6.8}{8.1}\selectfont\bfseries \tlname}};
+          \node[tlitem] at (34,\y+10) {%
+            \raggedright\setlength{\parskip}{0pt}%
+            \hyphenpenalty=10000\exhyphenpenalty=10000%
+            \textcolor{BPMuted}{\fontsize{5.9}{6.2}\selectfont \desc}};
         }
       \end{scope}
 
