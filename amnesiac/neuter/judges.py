@@ -7,13 +7,15 @@ import logging
 import httpx
 from openai import APIConnectionError, APITimeoutError, AsyncOpenAI
 
-from amnesiac.neuter.config import MODEL_J1, MODEL_N, TEMPERATURE_J1, TEMPERATURE_N
-from amnesiac.neuter.metrics import extract_json_response
+from amnesiac.neuter.config import MODEL_J1, MODEL_J2, MODEL_N, J2_TEMPERATURE, TEMPERATURE_J1, TEMPERATURE_N
+from amnesiac.neuter.metrics import extract_json_response, validate_j2_parsed
 from amnesiac.neuter.prompts import (
+    J2_IDENTIFIABILITY_SYSTEM,
     N_REWRITER_SYSTEM,
     Q1_EVIDENCE_SYSTEM,
     Q3_SIGNALS_SYSTEM,
     make_j1_user_prompt,
+    make_j2_user_prompt,
     make_n_rewriter_user_prompt,
 )
 
@@ -133,4 +135,22 @@ async def call_n_rewriter(
 
 
 async def call_j2(client: AsyncOpenAI, summary_text: str) -> dict:
-    raise NotImplementedError("p03")
+    """Run the J2 holdout judge on a summary; return the parsed and validated JSON dict."""
+    user_prompt = make_j2_user_prompt(summary_text)
+    response = await _call_with_retry(
+        lambda: client.chat.completions.create(
+            model=MODEL_J2,
+            temperature=J2_TEMPERATURE,
+            messages=[
+                {"role": "system", "content": J2_IDENTIFIABILITY_SYSTEM},
+                {"role": "user", "content": user_prompt},
+            ],
+        ),
+        axis_name="j2",
+    )
+    content = response.choices[0].message.content
+    if not content:
+        raise RuntimeError(f"Model {MODEL_J2} returned empty content for j2")
+    parsed = extract_json_response(content)
+    validate_j2_parsed(parsed)
+    return parsed

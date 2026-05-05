@@ -1,14 +1,29 @@
 """Pipeline shell for applying summary neutering to stored summaries."""
 
+from datetime import datetime
 import logging
+import os
 from pathlib import Path
 
+from openai import AsyncOpenAI
+
+from amnesiac.neuter.config import (
+    JUDGE_BLIND_THRESHOLD,
+    LLM_TIMEOUT_SECONDS,
+    MODEL_J1,
+    MODEL_J2,
+    MODEL_N,
+    OPENROUTER_BASE_URL,
+)
+from amnesiac.neuter.cycle import run_cycle
+from amnesiac.neuter.holdout import run_j2_holdout
 from amnesiac.store import apply_migrations, get_connection
 
 logger = logging.getLogger(__name__)
 
 
 async def run_neuter_pipeline(db_path: Path, run_date: str, *, force: bool = False) -> None:
+    """Run full neutering pipeline for run_date and persist the result to neutered_summaries."""
     conn = get_connection(db_path)
     try:
         apply_migrations(conn)
@@ -28,7 +43,88 @@ async def run_neuter_pipeline(db_path: Path, run_date: str, *, force: bool = Fal
             logger.info("neutered_summaries already has row for %s; pass --force to overwrite", run_date)
             return
 
-        logger.info("neuter skeleton stage: pipeline not yet implemented (p02/p03 pending)")
+        try:
+            parsed_date = datetime.strptime(run_date, "%Y-%m-%d")
+        except ValueError as exc:
+            raise ValueError(f"run_date must use YYYY-MM-DD format; got {run_date!r}") from exc
+        true_year = parsed_date.year
+        true_month = parsed_date.month
+
+        raw_summary = raw_row[0]
+        api_key = os.environ.get("OPENROUTER_API_KEY")
+        if not api_key:
+            raise RuntimeError("OPENROUTER_API_KEY is required to run the neutering pipeline")
+
+        async with AsyncOpenAI(
+            api_key=api_key,
+            base_url=OPENROUTER_BASE_URL,
+            timeout=LLM_TIMEOUT_SECONDS,
+        ) as client:
+            cycle_result = await run_cycle(client, raw_summary)
+            raw_holdout = await run_j2_holdout(
+                client,
+                raw_summary,
+                true_year,
+                true_month,
+                label="raw",
+            )
+            neutered_holdout = await run_j2_holdout(
+                client,
+                cycle_result["summary"],
+                true_year,
+                true_month,
+                label="neutered",
+            )
+
+        raw_period_id_score = raw_holdout["period_id_score"]
+        neutered_period_id_score = neutered_holdout["period_id_score"]
+        period_delta_vs_raw = raw_period_id_score - neutered_period_id_score
+        judge_blind = 1 if raw_period_id_score < JUDGE_BLIND_THRESHOLD else 0
+
+        conn.execute(
+            """
+            INSERT OR REPLACE INTO neutered_summaries (
+                run_date,
+                summary,
+                neutering_status,
+                final_iteration,
+                q3_preservation,
+                raw_period_id_score,
+                neutered_period_id_score,
+                period_delta_vs_raw,
+                judge_blind,
+                model_n,
+                model_j1,
+                model_j2
+            )
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            """,
+            (
+                run_date,
+                cycle_result["summary"],
+                cycle_result["neutering_status"],
+                cycle_result["final_iteration"],
+                cycle_result["q3_preservation"],
+                raw_period_id_score,
+                neutered_period_id_score,
+                period_delta_vs_raw,
+                judge_blind,
+                MODEL_N,
+                MODEL_J1,
+                MODEL_J2,
+            ),
+        )
+        conn.commit()
+        logger.info(
+            "neuter run_date=%s status=%s iter=%d q3=%.3f raw=%.3f neutered=%.3f delta=%.3f blind=%d",
+            run_date,
+            cycle_result["neutering_status"],
+            cycle_result["final_iteration"],
+            cycle_result["q3_preservation"],
+            raw_period_id_score,
+            neutered_period_id_score,
+            period_delta_vs_raw,
+            judge_blind,
+        )
     finally:
         conn.close()
-
