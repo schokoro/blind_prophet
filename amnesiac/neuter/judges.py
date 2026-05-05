@@ -7,6 +7,16 @@ import logging
 import httpx
 from openai import APIConnectionError, APITimeoutError, AsyncOpenAI
 
+from amnesiac.neuter.config import MODEL_J1, MODEL_N, TEMPERATURE_J1, TEMPERATURE_N
+from amnesiac.neuter.metrics import extract_json_response
+from amnesiac.neuter.prompts import (
+    N_REWRITER_SYSTEM,
+    Q1_EVIDENCE_SYSTEM,
+    Q3_SIGNALS_SYSTEM,
+    make_j1_user_prompt,
+    make_n_rewriter_user_prompt,
+)
+
 logger = logging.getLogger(__name__)
 
 
@@ -55,11 +65,43 @@ async def _call_with_retry(coro_factory, axis_name: str, max_attempts: int = 3):
 
 
 async def call_j1_q1(client: AsyncOpenAI, summary_text: str) -> dict:
-    raise NotImplementedError("p02")
+    """Run J1 Q1-evidence judge on a summary; return the parsed JSON dict."""
+    user_prompt = make_j1_user_prompt(summary_text)
+    response = await _call_with_retry(
+        lambda: client.chat.completions.create(
+            model=MODEL_J1,
+            temperature=TEMPERATURE_J1,
+            messages=[
+                {"role": "system", "content": Q1_EVIDENCE_SYSTEM},
+                {"role": "user", "content": user_prompt},
+            ],
+        ),
+        axis_name="j1_q1",
+    )
+    content = response.choices[0].message.content
+    if not content:
+        raise RuntimeError(f"Model {MODEL_J1} returned empty content for j1_q1")
+    return extract_json_response(content)
 
 
 async def call_j1_q3(client: AsyncOpenAI, summary_text: str) -> dict:
-    raise NotImplementedError("p02")
+    """Run J1 Q3-signals judge on a summary; return the parsed JSON dict."""
+    user_prompt = make_j1_user_prompt(summary_text)
+    response = await _call_with_retry(
+        lambda: client.chat.completions.create(
+            model=MODEL_J1,
+            temperature=TEMPERATURE_J1,
+            messages=[
+                {"role": "system", "content": Q3_SIGNALS_SYSTEM},
+                {"role": "user", "content": user_prompt},
+            ],
+        ),
+        axis_name="j1_q3",
+    )
+    content = response.choices[0].message.content
+    if not content:
+        raise RuntimeError(f"Model {MODEL_J1} returned empty content for j1_q3")
+    return extract_json_response(content)
 
 
 async def call_n_rewriter(
@@ -68,9 +110,27 @@ async def call_n_rewriter(
     q1_identifiers: list[dict],
     q3_signals: list[dict],
 ) -> str:
-    raise NotImplementedError("p02")
+    """Run the N rewriter; return the candidate summary as plain text."""
+    user_prompt = make_n_rewriter_user_prompt(prev_summary, q1_identifiers, q3_signals)
+    response = await _call_with_retry(
+        lambda: client.chat.completions.create(
+            model=MODEL_N,
+            temperature=TEMPERATURE_N,
+            messages=[
+                {"role": "system", "content": N_REWRITER_SYSTEM},
+                {"role": "user", "content": user_prompt},
+            ],
+        ),
+        axis_name="n_rewriter",
+    )
+    content = response.choices[0].message.content
+    if not content:
+        raise RuntimeError(f"Model {MODEL_N} returned empty content for n_rewriter")
+    stripped = content.strip()
+    if not stripped:
+        raise RuntimeError(f"Model {MODEL_N} returned empty content for n_rewriter")
+    return stripped
 
 
 async def call_j2(client: AsyncOpenAI, summary_text: str) -> dict:
     raise NotImplementedError("p03")
-
