@@ -84,6 +84,12 @@ async def run_cycle(client: AsyncOpenAI, raw_summary: str) -> dict:
             len(residual["warn"]),
             length_ratio,
         )
+        if residual["manual_fail"]:
+            logger.warning(
+                "iter_%02d residual_hard_fail matches: %s",
+                iteration,
+                [(m["pattern"], m["match"]) for m in residual["hard_fail"]][:30],
+            )
 
         if status == "continue":
             accepted_iteration = iteration

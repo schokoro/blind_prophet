@@ -1,0 +1,124 @@
+\begin{frame}[plain]
+  \begingroup
+  \begin{tikzpicture}[remember picture,overlay,x=0.1666667mm,y=-0.1666667mm]
+    \begin{scope}[shift={(current page.north west)}]
+
+      \slideheader{RAG: retrieval is built on the news lead}
+
+      \definecolor{BPRed}{HTML}{C0392B}
+      \definecolor{BPRedFill}{HTML}{FDE8E8}
+      \colorlet{BPMuted}{BPLine}
+
+      \node[anchor=north west, inner sep=0pt] at (48,112) {%
+        \begin{minipage}{91mm}
+          \setlength{\parindent}{0pt}
+          \raggedright
+          \begin{tcolorbox}[
+            colback=BPLight,
+            colframe=BPFooter,
+            boxrule=0.25mm,
+            arc=1.2mm,
+            left=1.8mm,
+            right=1.8mm,
+            top=1.1mm,
+            bottom=1.2mm,
+            boxsep=0pt
+          ]
+            {\fontsize{6.8}{8.1}\selectfont
+              \textcolor{BPMuted}{\textbf{Frank Media}}\hfill
+              \textcolor{BPMuted}{\fontsize{6.2}{7.4}\selectfont 03.09.2025}
+            }\par\vspace{0.6mm}
+            {\fontsize{6.9}{8.35}\selectfont
+              \textcolor{BPRed}{Годовая инфляция в России замедлилась до 8,28\%.}\par
+              \textcolor{BPRed}{За период с 26 августа по 1 сентября зафиксирована дефляция 0,08\%.}\par
+              \textcolor{BPRed}{Годовая инфляция снизилась с 8,43\% до 8,28\%.}\par
+              \textcolor{BPMuted}{В сегменте продовольственных товаров снижение цен на 0,18\%.}\par
+              \textcolor{BPMuted}{По данным Росстата, плодоовощная продукция снизилась на 3,2\%.}\par
+              \textcolor{BPMuted}{\ldots}
+            }
+          \end{tcolorbox}
+
+          \vspace{1.7mm}
+
+          \begin{tcolorbox}[
+            colback=BPLight,
+            colframe=BPFooter,
+            boxrule=0.25mm,
+            arc=1.2mm,
+            left=1.8mm,
+            right=1.8mm,
+            top=1.1mm,
+            bottom=1.2mm,
+            boxsep=0pt
+          ]
+            {\fontsize{6.8}{8.1}\selectfont
+              \textcolor{BPMuted}{\textbf{Ведомости}}\hfill
+              \textcolor{BPMuted}{\fontsize{6.2}{7.4}\selectfont 02.06.2024}
+            }\par\vspace{0.6mm}
+            {\fontsize{6.9}{8.35}\selectfont
+              \textcolor{BPRed}{ОПЕК+ продлила действующие квоты до конца 2025 года.}\par
+              \textcolor{BPRed}{Организация продлила квоты по добыче нефти для всех стран-участниц.}\par
+              \textcolor{BPRed}{Согласно документу, уровень добычи продлевается с 1 января 2025-го.}\par
+              \textcolor{BPMuted}{Разрешённый уровень для Саудовской Аравии и России не изменился.}\par
+              \textcolor{BPMuted}{31 мая аналитики заявили, что ОПЕК+ с высокой вероятностью продлит сделку.}\par
+              \textcolor{BPMuted}{\ldots}
+            }
+          \end{tcolorbox}
+        \end{minipage}
+      };
+
+      \begin{scope}[
+        shift={(618,132)},
+        ragnode/.style={
+          rectangle,
+          line width=0.45pt,
+          minimum height=8mm,
+          inner xsep=1.2mm,
+          inner ysep=1.0mm,
+          align=center,
+          font=\fontsize{6.45}{7.7}\selectfont,
+          text=BPText
+        },
+        ragneutral/.style={ragnode, draw=BPSkyBorder, fill=BPSkyFill},
+        raglead/.style={ragnode, draw=BPRed, fill=BPRedFill},
+        ragaccent/.style={ragnode, draw=BPAccent, fill=BPAccentFill},
+        ragnavy/.style={ragnode, draw=BPNavy, fill=BPNavyFill},
+        ragarrow/.style={
+          -{Latex[length=2.0mm,width=1.4mm]},
+          draw=BPLine,
+          line width=0.55pt
+        }
+      ]
+        \node[ragneutral, minimum width=21mm] (msg) at (136,0) {сообщение};
+
+        \coordinate (fork) at (136,54);
+        \node[raglead, minimum width=24mm] (lead) at (73,90) {первые 3\\предложения};
+        \node[ragneutral, minimum width=21mm] (full) at (205,90) {полный текст};
+        \node[ragaccent, minimum width=23mm] (frida) at (73,158) {FRIDA\\embedding};
+        \node[ragnavy, minimum width=19mm] (retrieval) at (73,226) {retrieval};
+        \node[ragaccent, minimum width=25mm] (summ) at (205,158) {суммаризация};
+
+        \draw[draw=BPLine, line width=0.55pt] (msg.south) -- (fork);
+        \draw[ragarrow] (fork) -| (lead.north);
+        \draw[ragarrow] (fork) -| (full.north);
+        \draw[ragarrow, draw=BPRed] (lead.south) -- (frida.north);
+        \draw[ragarrow, draw=BPAccent] (frida.south) -- (retrieval.north);
+        \draw[ragarrow] (full.south) -- (summ.north);
+      \end{scope}
+
+      \node[
+        anchor=north,
+        inner sep=0pt,
+        text=BPMuted,
+        align=center,
+        text width=54mm,
+        font=\fontsize{7.8}{9.4}\selectfont\itshape
+      ] at (759,458) {Retrieval использует лид;\\полный текст — в суммаризацию};
+
+      \slidefooter{Сергей Устьянцев}{Извлечение сигнала инфляционных ожиданий
+из новостного потока с контролем утечки будущих данных}
+
+    \end{scope}
+  \end{tikzpicture}
+  \endgroup
+\end{frame}
