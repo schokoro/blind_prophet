@@ -92,6 +92,18 @@ _BASE_MIGRATIONS: list[tuple[str, str | list[str]]] = [
         )
         """,
     ),
+    (
+        "008_create_infom",
+        """
+        CREATE TABLE IF NOT EXISTS infom_expectations (
+            id          INTEGER PRIMARY KEY,
+            survey_date TEXT UNIQUE NOT NULL,
+            median_12m  REAL NOT NULL,
+            source_url  TEXT,
+            created_at  TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )
+        """,
+    ),
 ]
 
 
