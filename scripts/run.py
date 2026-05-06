@@ -5,6 +5,8 @@ from typing import Optional
 
 import typer
 
+from amnesiac.utils import normalize_run_date
+
 app = typer.Typer()
 logging.basicConfig(level=logging.INFO, format="%(levelname)s %(message)s")
 logger = logging.getLogger(__name__)
@@ -149,31 +151,33 @@ def embed(
 
 @app.command()
 def summarize(
-    date: str = typer.Option(..., help="Survey date (YYYY-MM-DD), e.g. 2021-10-20"),
+    date: str = typer.Option(..., help="Survey date (YYYY-MM or YYYY-MM-DD), e.g. 2021-10"),
     db_path: Path = typer.Option(DEFAULT_DB_PATH, help="Path to SQLite database file"),
     force: bool = typer.Option(False, "--force", help="Overwrite existing summary for this date"),
 ) -> None:
     """Summarize news corpus for a given survey date and store result in DB."""
     from amnesiac.summarize.runner import run_summarize_pipeline
 
+    date = normalize_run_date(date)
     asyncio.run(run_summarize_pipeline(db_path, date, force=force))
 
 
 @app.command()
 def neuter(
-    date: str = typer.Option(..., help="Survey date (YYYY-MM-DD), e.g. 2021-10-20"),
+    date: str = typer.Option(..., help="Survey date (YYYY-MM or YYYY-MM-DD), e.g. 2021-10"),
     db_path: Path = typer.Option(DEFAULT_DB_PATH, help="Path to SQLite database file"),
     force: bool = typer.Option(False, "--force", help="Overwrite existing neutered_summaries row"),
 ) -> None:
     """Run the neutering pipeline for a given run_date and store result in DB."""
     from amnesiac.neuter.runner import run_neuter_pipeline
 
+    date = normalize_run_date(date)
     asyncio.run(run_neuter_pipeline(db_path, date, force=force))
 
 
 @app.command()
 def forecast(
-    date: str = typer.Option(..., help="Survey date (YYYY-MM-DD), e.g. 2021-12-20"),
+    date: str = typer.Option(..., help="Survey date (YYYY-MM or YYYY-MM-DD), e.g. 2021-12"),
     condition: str = typer.Option(
         "both",
         "--condition",
@@ -186,6 +190,7 @@ def forecast(
     """Run forecast pipeline for a given run_date and store samples in DB."""
     from amnesiac.forecast.runner import run_forecast_pipeline
 
+    date = normalize_run_date(date)
     asyncio.run(
         run_forecast_pipeline(
             db_path,
@@ -195,6 +200,45 @@ def forecast(
             n_samples=n_samples,
         )
     )
+
+
+@app.command()
+def series(
+    dates: str = typer.Option(
+        ...,
+        "--dates",
+        help="Comma-separated list of dates: YYYY-MM or YYYY-MM-DD, e.g. '2021-09,2022-03,2022-04'",
+    ),
+    n_samples: int = typer.Option(3, "--n-samples", help="Forecast samples per persona"),
+    db_path: Path = typer.Option(DEFAULT_DB_PATH, help="Path to SQLite database file"),
+) -> None:
+    """Run summarize -> neuter -> forecast for each date in the series, with skip-existing and continue-on-error."""
+    from amnesiac.forecast.series import format_summary_table, run_series_pipeline
+
+    raw_dates = [d.strip() for d in dates.split(",") if d.strip()]
+    if not raw_dates:
+        raise typer.BadParameter("--dates must contain at least one date")
+
+    normalized = [normalize_run_date(d) for d in raw_dates]
+    logger.info("Series run_dates (normalized): %s", normalized)
+
+    results = asyncio.run(run_series_pipeline(db_path, normalized, n_samples=n_samples))
+
+    summary = format_summary_table(results)
+    print()
+    print("=" * 80)
+    print("SERIES RUN SUMMARY")
+    print("=" * 80)
+    print(summary)
+    print()
+
+    failed = [
+        r
+        for r in results
+        if any(s.status == "failed" for s in [r.summarize, r.neuter, r.forecast])
+    ]
+    if failed:
+        logger.warning("Failed dates: %s", [r.run_date for r in failed])
 
 
 if __name__ == "__main__":
