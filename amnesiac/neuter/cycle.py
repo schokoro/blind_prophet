@@ -4,7 +4,7 @@ import logging
 
 from openai import AsyncOpenAI
 
-from amnesiac.neuter.config import N_MAX, ROLLBACK_ON_HARD_RESIDUAL, Y_FLOOR
+from amnesiac.neuter.config import MODEL_N, N_MAX, ROLLBACK_ON_HARD_RESIDUAL, Y_FLOOR
 from amnesiac.neuter.judges import call_j1_q1, call_j1_q3, call_n_rewriter
 from amnesiac.neuter.metrics import (
     RESIDUAL_FINGERPRINT_PATTERNS,
@@ -16,7 +16,7 @@ from amnesiac.neuter.metrics import (
 logger = logging.getLogger(__name__)
 
 
-async def run_cycle(client: AsyncOpenAI, raw_summary: str) -> dict:
+async def run_cycle(client: AsyncOpenAI, raw_summary: str, *, model_n: str = MODEL_N) -> dict:
     """
     Run up to N_MAX iterations of N → J1(Q1) → N rewrite → J1(Q3) → residual check
     on raw_summary. In-memory only; no disk I/O.
@@ -59,6 +59,7 @@ async def run_cycle(client: AsyncOpenAI, raw_summary: str) -> dict:
             prev_summary,
             q1.get("identifiers", []),
             prev_q3.get("signals", []),
+            model_n=model_n,
         )
         q3_candidate = await call_j1_q3(client, candidate_summary)
 

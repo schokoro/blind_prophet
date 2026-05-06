@@ -164,15 +164,26 @@ def summarize(
 
 @app.command()
 def neuter(
-    date: str = typer.Option(..., help="Survey date (YYYY-MM or YYYY-MM-DD), e.g. 2021-10"),
+    date: str = typer.Option(..., help="Survey date (YYYY-MM or YYYY-MM-DD), e.g. 2021-12 or 2021-12-20"),
+    model: Optional[str] = typer.Option(
+        None,
+        "--model",
+        help="Override MODEL_N from config.py for this run (e.g. 'openai/gpt-5.4')",
+    ),
     db_path: Path = typer.Option(DEFAULT_DB_PATH, help="Path to SQLite database file"),
-    force: bool = typer.Option(False, "--force", help="Overwrite existing neutered_summaries row"),
+    force: bool = typer.Option(False, "--force", help="Overwrite existing record"),
 ) -> None:
-    """Run the neutering pipeline for a given run_date and store result in DB."""
+    """Run neutering pipeline for a given run_date."""
     from amnesiac.neuter.runner import run_neuter_pipeline
 
-    date = normalize_run_date(date)
-    asyncio.run(run_neuter_pipeline(db_path, date, force=force))
+    asyncio.run(
+        run_neuter_pipeline(
+            db_path,
+            normalize_run_date(date),
+            force=force,
+            model_n_override=model,
+        )
+    )
 
 
 @app.command()

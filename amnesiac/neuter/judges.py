@@ -111,12 +111,14 @@ async def call_n_rewriter(
     prev_summary: str,
     q1_identifiers: list[dict],
     q3_signals: list[dict],
+    *,
+    model_n: str = MODEL_N,
 ) -> str:
     """Run the N rewriter; return the candidate summary as plain text."""
     user_prompt = make_n_rewriter_user_prompt(prev_summary, q1_identifiers, q3_signals)
     response = await _call_with_retry(
         lambda: client.chat.completions.create(
-            model=MODEL_N,
+            model=model_n,
             temperature=TEMPERATURE_N,
             messages=[
                 {"role": "system", "content": N_REWRITER_SYSTEM},
@@ -127,10 +129,10 @@ async def call_n_rewriter(
     )
     content = response.choices[0].message.content
     if not content:
-        raise RuntimeError(f"Model {MODEL_N} returned empty content for n_rewriter")
+        raise RuntimeError(f"Model {model_n} returned empty content for n_rewriter")
     stripped = content.strip()
     if not stripped:
-        raise RuntimeError(f"Model {MODEL_N} returned empty content for n_rewriter")
+        raise RuntimeError(f"Model {model_n} returned empty content for n_rewriter")
     return stripped
 
 

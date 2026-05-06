@@ -22,8 +22,18 @@ from amnesiac.store import apply_migrations, get_connection
 logger = logging.getLogger(__name__)
 
 
-async def run_neuter_pipeline(db_path: Path, run_date: str, *, force: bool = False) -> None:
+async def run_neuter_pipeline(
+    db_path: Path,
+    run_date: str,
+    *,
+    force: bool = False,
+    model_n_override: str | None = None,
+) -> None:
     """Run full neutering pipeline for run_date and persist the result to neutered_summaries."""
+    model_n = model_n_override if model_n_override else MODEL_N
+    if model_n_override:
+        logger.info("Using N model override: %s", model_n_override)
+
     conn = get_connection(db_path)
     try:
         apply_migrations(conn)
@@ -60,7 +70,7 @@ async def run_neuter_pipeline(db_path: Path, run_date: str, *, force: bool = Fal
             base_url=OPENROUTER_BASE_URL,
             timeout=LLM_TIMEOUT_SECONDS,
         ) as client:
-            cycle_result = await run_cycle(client, raw_summary)
+            cycle_result = await run_cycle(client, raw_summary, model_n=model_n)
             raw_holdout = await run_j2_holdout(
                 client,
                 raw_summary,
@@ -109,7 +119,7 @@ async def run_neuter_pipeline(db_path: Path, run_date: str, *, force: bool = Fal
                 neutered_period_id_score,
                 period_delta_vs_raw,
                 judge_blind,
-                MODEL_N,
+                model_n,
                 MODEL_J1,
                 MODEL_J2,
             ),

@@ -150,6 +150,24 @@ Residual fingerprint neutralization:
 - Avoid preserving search-identifiable phrases verbatim.
 - Do not introduce new dates, names, or historically unique labels.
 
+Period-era markers (MUST be replaced):
+
+The following terms are strong period-era anchors. They must be replaced with generic functional formulations that preserve the economic mechanism but remove the specific historical reference. Even when they appear "natural" in context, they reveal the period and must be neutralized.
+
+- "санкции", "контрсанкции", "санкционные ограничения" -> "внешнеполитические ограничения", "торговые барьеры", "ограничения международного сотрудничества"
+- "пандемия", "пандемический", "COVID", "ковид", "коронавирус" -> "санитарные ограничения", "эпидемиологические меры", "период масштабных ограничений мобильности"
+- "спецоперация", "СВО", "военная операция", "военные действия" -> "геополитический кризис", "вооружённый конфликт", "обострение в регионе"
+- "Украина", "украинский кризис", "Донбасс" -> "соседнее государство", "конфликтный регион" (only if essential for signal; otherwise omit the geographic reference entirely and rephrase through mechanism)
+- "Brent", "WTI", "Urals", "URALS" -> "эталонные сорта нефти", "мировой нефтяной рынок", "ключевые экспортные сорта"
+- "Citi", "Citigroup", "JP Morgan", "Goldman Sachs" -> "крупный международный банк", "глобальный инвестбанк"
+- "Пятёрочка", "Магнит", "X5", "Лента" -> "крупная розничная сеть", "продуктовый ритейлер"
+- "ФРГ", "Германия как экономика", "Европейский союз" в роли period anchor -> "европейская экономика", "крупная европейская экономика"
+- "SWIFT", "отключение от SWIFT" -> "международная платёжная система", "ограничения трансграничных расчётов"
+
+If a generic replacement breaks the sentence's economic logic, rewrite the entire sentence around the underlying mechanism (supply shock, demand shock, monetary tightening, fiscal expansion, etc.), keeping Q3 signals (category, direction, strength) intact.
+
+Crucially: if you cannot remove a period-era marker without losing the Q3 signal, prefer rewriting the surrounding context rather than keeping the marker. The blind judge J2 must not be able to identify the period from these terms.
+
 The neutralization scope covers the entire text including structural sections such as «Связи» (connections) and «Темы узла» (node themes). These sections are not metadata — neutralize them on the same terms as the narrative body. Specifically: remove named trigger descriptions (e.g. «рост цен на газ в Европе стал ключевым триггером»), generalize thematic labels (e.g. «стагфляция» → «риск одновременно высокой инфляции и слабого роста»), and apply the same level/delta replacement strategy to any numbers in these sections.
 
 Do not over-neutralize:
@@ -224,4 +242,3 @@ def make_j2_user_prompt(summary_text: str) -> str:
         "TEXT:\n"
         f"{summary_text}"
     )
-
