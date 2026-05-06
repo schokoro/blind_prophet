@@ -70,9 +70,9 @@
         };
 
       % Dedup box with arrow from topk
-      \node[ragstep, draw=BPLine, fill=BPLight, minimum width=28mm,
+      \node[ragstep, draw=BPLine, fill=BPLight, minimum width=22mm,
             font=\fontsize{7.5}{9}\selectfont\mdseries, text=BPMuted]
-        (dedup) at (430,252) {дедупликация\\(cosine $\geq$ 0.9)};
+        (dedup) at (420,252) {дедупликация\\(cosine $\geq$ 0.9)};
       \draw[pipearrowmuted] (topk.east) -- (dedup.west);
 
       % Arrow from topk to exbox — strictly horizontal, starts after dedup
