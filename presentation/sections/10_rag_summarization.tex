@@ -37,7 +37,7 @@
 
       \node[ragstep, draw=BPLine, fill=BPLight, minimum width=32mm,
         font=\scriptsize, text=BPMuted]
-        (dedup) at (425,226) {\resizebox{30mm}{!}{дедупликация (cosine $\geq$ 0.9)}};
+        (dedup) at (425,226) {дедупликация (cosine $\geq$ 0.9)};
 
       \node[ragstep, draw=BPSkyBorder, fill=BPSkyFill, minimum width=42mm]
         (theme) at (185,302) {тематические саммари $\times 9$};
@@ -49,7 +49,6 @@
       \node[ragnote] at (314,378) {800--1500 слов};
 
       \draw[pipearrowmuted] (queries.south) -- (topk.north);
-      \draw[pipearrowmuted] (topk.east) -- (dedup.west);
       \draw[pipearrowmuted] (topk.south) -- (theme.north);
       \draw[pipearrowmuted] (theme.south) -- (narrative.north);
 
@@ -77,7 +76,7 @@
       };
 
       \draw[->, draw=BPMuted, line width=0.4pt]
-        (topk.east) -- (examplebox.west);
+      (topk.east) -- (topk.east -| examplebox.west);
 
       % --- Thesis block ---------------------------------------------------
       \node[anchor=north west, inner sep=0pt, fill=BPLight,
@@ -87,9 +86,9 @@
         (thesisbg.north west) -- (thesisbg.south west);
       \node[anchor=west, inner sep=0pt, text=BPText, align=left,
         font=\small,
-        text width=58mm]
+        text width=62mm]
         at ([xshift=4.4mm]thesisbg.west) {%
-          RAG превращает шумное двухнедельное окно Telegram-новостей\\
+          RAG превращает шумное двухнедельное окно Telegram-новостей
           в компактный экономический \mbox{нарратив}%
         };
 
