@@ -24,73 +24,75 @@
 
       \slideheader{От retrieved-новостей к структурированному саммари}
 
-      % --- Left column: summarization pipeline ---------------------------
+      % --- Left column: summarization pipeline ---
       \node[anchor=west, inner sep=0pt, text=BPMuted,
         font=\fontsize{8.4}{10}\selectfont\bfseries\scshape]
         at (64,128) {Пайплайн суммаризации};
 
       \node[ragstep, draw=BPGray, fill=BPGrayFill, minimum width=42mm]
-        (queries) at (185,166) {9 тематических запросов};
+        (queries) at (185,176) {9 тематических запросов};
 
       \node[ragstep, draw=BPSkyBorder, fill=BPSkyFill, minimum width=48mm]
-        (topk) at (185,226) {топ-50 по каждой теме};
-
-      \node[ragstep, draw=BPLine, fill=BPLight, minimum width=32mm,
-        font=\scriptsize, text=BPMuted]
-        (dedup) at (425,226) {дедупликация (cosine $\geq$ 0.9)};
+        (topk) at (185,252) {топ-50 по каждой теме};
 
       \node[ragstep, draw=BPSkyBorder, fill=BPSkyFill, minimum width=42mm]
-        (theme) at (185,302) {тематические саммари $\times 9$};
-      \node[ragnote] at (314,302) {параллельно};
+        (theme) at (185,328) {тематические саммари $\times 9$};
+      \node[ragnote] at (theme.east) [xshift=3mm] {параллельно};
 
       \node[ragstep, draw=BPNavy, fill=BPNavyFill, text=BPNavy,
         minimum width=42mm]
-        (narrative) at (185,378) {итоговый нарратив};
-      \node[ragnote] at (314,378) {800--1500 слов};
+        (narrative) at (185,404) {итоговый нарратив};
+      \node[ragnote] at (narrative.east) [xshift=3mm] {800--1500 слов};
 
       \draw[pipearrowmuted] (queries.south) -- (topk.north);
-      \draw[pipearrowmuted] (topk.south) -- (theme.north);
-      \draw[pipearrowmuted] (theme.south) -- (narrative.north);
+      \draw[pipearrowmuted] (topk.south)    -- (theme.north);
+      \draw[pipearrowmuted] (theme.south)   -- (narrative.north);
 
-      % --- Right column: retrieved-news example --------------------------
-      \node[anchor=north west, inner sep=0pt] (examplebox) at (522,140) {%
-        \begin{tcolorbox}[
-          enhanced,
-          width=65mm,
-          colback=BPLight,
-          colframe=BPLine,
-          boxrule=0.35pt,
-          arc=1.4mm,
-          left=2.4mm,
-          right=2.4mm,
-          top=1.9mm,
-          bottom=1.9mm
-        ]
-          {\ttfamily\small\setlength{\baselineskip}{10.2pt}%
-          \resizebox{\linewidth}{!}{\textcolor{BPMuted}{[день 3 | }\textcolor{BPNavy}{\textbf{tass\_agency}}\textcolor{BPMuted}{]} \textcolor{BPText}{Банк России повысил ключевую ставку на 100 б.п.}}\par
-          \resizebox{\linewidth}{!}{\textcolor{BPMuted}{[день 5 | }\textcolor{BPNavy}{\textbf{kommersant}}\textcolor{BPMuted}{]} \textcolor{BPText}{Инфляционное давление значительно усилилось.}}\par
-          \resizebox{\linewidth}{!}{\textcolor{BPMuted}{[день 7 | }\textcolor{BPNavy}{\textbf{vedomosti}}\textcolor{BPMuted}{]} \textcolor{BPText}{Курс рубля продолжает ослабевать на фоне санкций.}}\par
-          \resizebox{\linewidth}{!}{\textcolor{BPMuted}{[день 9 | }\textcolor{BPNavy}{\textbf{rbc\_news}}\textcolor{BPMuted}{]} \textcolor{BPText}{Аналитики ожидают дальнейшего ужесточения ДКП.}}\par
-          \textcolor{BPMuted}{\ldots}}
-        \end{tcolorbox}%
-      };
-
-      \draw[->, draw=BPMuted, line width=0.4pt]
-      (topk.east) -- (topk.east -| examplebox.west);
-
-      % --- Thesis block ---------------------------------------------------
-      \node[anchor=north west, inner sep=0pt, fill=BPLight,
-        minimum width=65mm, minimum height=17mm] (thesisbg)
-        at ([yshift=-5pt]examplebox.south west) {};
-      \draw[BPNavy, line width=0.55mm]
-        (thesisbg.north west) -- (thesisbg.south west);
-      \node[anchor=west, inner sep=0pt, text=BPText, align=left,
-        font=\small,
-        text width=62mm]
-        at ([xshift=4.4mm]thesisbg.west) {%
-          RAG превращает шумное двухнедельное окно Telegram-новостей
-          в компактный экономический \mbox{нарратив}%
+      % --- Right column: example box (pure TikZ, no tcolorbox) ---
+      \node[anchor=north west,
+            rounded corners=1.4mm,
+            draw=BPLine, fill=BPLight,
+            line width=0.35pt,
+            inner xsep=4mm, inner ysep=3mm]
+        (exbox) at (522,140) {%
+          \parbox{60mm}{%
+            \raggedright\fontsize{7}{9.5}\selectfont
+            \textcolor{BPMuted}{[день~3~|~}\textcolor{BPNavy}{\bfseries tass\_agency}\textcolor{BPMuted}{]}
+            \textcolor{BPText}{Банк России повысил ключевую ставку на 100~б.п.}\\[2pt]
+            \textcolor{BPMuted}{[день~5~|~}\textcolor{BPNavy}{\bfseries kommersant}\textcolor{BPMuted}{]}
+            \textcolor{BPText}{Инфляционное давление значительно усилилось.}\\[2pt]
+            \textcolor{BPMuted}{[день~7~|~}\textcolor{BPNavy}{\bfseries vedomosti}\textcolor{BPMuted}{]}
+            \textcolor{BPText}{Курс рубля продолжает ослабевать на фоне санкций.}\\[2pt]
+            \textcolor{BPMuted}{[день~9~|~}\textcolor{BPNavy}{\bfseries rbc\_news}\textcolor{BPMuted}{]}
+            \textcolor{BPText}{Аналитики ожидают дальнейшего ужесточения ДКП.}\\[2pt]
+            \textcolor{BPMuted}{\ldots}%
+          }%
         };
+
+      % Dedup annotation above the horizontal arrow
+      \node[inner sep=0pt, text=BPMuted,
+            font=\fontsize{7.5}{9}\selectfont]
+        at (640,200) {дедупликация (cosine $\geq$ 0.9)};
+
+      % Arrow from topk to exbox — strictly horizontal
+      \draw[->, draw=BPMuted, line width=0.4pt]
+        (topk.east) -- (topk.east -| exbox.west);
+
+      % --- Thesis block ---
+      \node[anchor=north west,
+            fill=BPLight,
+            minimum width=68mm,
+            inner xsep=4mm, inner ysep=3mm,
+            text=BPText,
+            align=left,
+            font=\small,
+            text width=60mm]
+        (thbox) at (522,390) {%
+          RAG превращает шумное двухнедельное окно
+          Telegram-новостей в компактный экономический нарратив%
+        };
+      \draw[BPNavy, line width=0.55mm]
+        (thbox.north west) -- (thbox.south west);
 
       \slidefooter{Сергей Устьянцев}{Извлечение сигнала инфляционных ожиданий
       из новостного потока с контролем утечки будущих данных}
