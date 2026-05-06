@@ -27,73 +27,59 @@
       % --- Left column: summarization pipeline ---
       \node[anchor=west, inner sep=0pt, text=BPMuted,
         font=\fontsize{8.4}{10}\selectfont\bfseries\scshape]
-        at (64,128) {Пайплайн суммаризации};
+        at (64,110) {Пайплайн суммаризации};
 
-      \node[ragstep, draw=BPGray, fill=BPGrayFill, minimum width=42mm]
-        (queries) at (185,176) {9 тематических запросов};
+      \node[ragstep, draw=BPSkyBorder, fill=BPSkyFill, minimum width=56mm, text=BPText]
+        (queries) at (185,150) {9 тематических запросов};
 
-      \node[ragstep, draw=BPSkyBorder, fill=BPSkyFill, minimum width=48mm]
-        (topk) at (185,252) {топ-50 по каждой теме};
+      \node[ragstep, draw=BPSkyBorder, fill=BPSkyFill, minimum width=56mm, text=BPText]
+        (topk) at (185,225) {топ-50 по каждой теме};
 
-      \node[ragstep, draw=BPSkyBorder, fill=BPSkyFill, minimum width=42mm]
-        (theme) at (185,328) {тематические саммари $\times 9$};
+      \node[ragstep, draw=BPSkyBorder, fill=BPSkyFill, minimum width=56mm, text=BPText]
+        (dedup) at (185,300) {дедупликация (cosine $\geq$ 0.9)};
+
+      \node[ragstep, draw=BPSkyBorder, fill=BPSkyFill, minimum width=56mm, text=BPText]
+        (theme) at (185,375) {тематические саммари $\times 9$};
       \node[ragnote] at (theme.east) [xshift=3mm] {параллельно};
 
       \node[ragstep, draw=BPNavy, fill=BPNavyFill, text=BPNavy,
-        minimum width=42mm]
-        (narrative) at (185,404) {итоговый нарратив};
-      \node[ragnote] at (narrative.east) [xshift=3mm] {800--1500 слов};
+        minimum width=56mm]
+        (narrative) at (185,450) {итоговый нарратив};
 
       \draw[pipearrowmuted] (queries.south) -- (topk.north);
-      \draw[pipearrowmuted] (topk.south)    -- (theme.north);
+      \draw[pipearrowmuted] (topk.south)    -- (dedup.north);
+      \draw[pipearrowmuted] (dedup.south)   -- (theme.north);
       \draw[pipearrowmuted] (theme.south)   -- (narrative.north);
 
-      % --- Right column: example box (pure TikZ, no tcolorbox) ---
-      \node[anchor=north west,
+      % --- Right column: summary output ---
+      \node[anchor=west, inner sep=0pt, text=BPMuted,
+        font=\fontsize{8.4}{10}\selectfont\bfseries\scshape]
+        at (522,110) {Результат: нарративное саммари};
+
+      \node[anchor=south west,
             rounded corners=1.4mm,
             draw=BPLine, fill=BPLight,
             line width=0.35pt,
-            inner xsep=4mm, inner ysep=3mm]
-        (exbox) at (522,140) {%
-          \parbox{60mm}{%
-            \raggedright\fontsize{7}{9.5}\selectfont
-            \textcolor{BPMuted}{[день~3~|~}\textcolor{BPNavy}{\bfseries tass\_agency}\textcolor{BPMuted}{]}
-            \textcolor{BPText}{Банк России повысил ключевую ставку на 100~б.п.}\\[2pt]
-            \textcolor{BPMuted}{[день~5~|~}\textcolor{BPNavy}{\bfseries kommersant}\textcolor{BPMuted}{]}
-            \textcolor{BPText}{Инфляционное давление значительно усилилось.}\\[2pt]
-            \textcolor{BPMuted}{[день~7~|~}\textcolor{BPNavy}{\bfseries vedomosti}\textcolor{BPMuted}{]}
-            \textcolor{BPText}{Курс рубля продолжает ослабевать на фоне санкций.}\\[2pt]
-            \textcolor{BPMuted}{[день~9~|~}\textcolor{BPNavy}{\bfseries rbc\_news}\textcolor{BPMuted}{]}
-            \textcolor{BPText}{Аналитики ожидают дальнейшего ужесточения ДКП.}\\[2pt]
-            \textcolor{BPMuted}{\ldots}%
+            inner xsep=4mm, inner ysep=4mm]
+        (outbox) at (522,450) {%
+          \parbox{62mm}{%
+            \raggedright\fontsize{8}{11.5}\selectfont\textcolor{BPText}{%
+              \textbf{Узел 1: Макроэкономическая ситуация и дилемма ДКП
+              (дни 1–2)}\\[4pt]
+              Годовая инфляция на середину периода составила 3,15\% при
+              усилении проинфляционных факторов. Аналитики ЦБ отметили,
+              что сдерживающие факторы могут быть временными; рост цен
+              производителей потребительских товаров постепенно усиливается.%
+            }%
           }%
         };
 
-      % Dedup box with arrow from topk
-      \node[ragstep, draw=BPLine, fill=BPLight, minimum width=22mm,
-            font=\fontsize{7.5}{9}\selectfont\mdseries, text=BPMuted]
-        (dedup) at (420,252) {дедупликация\\(cosine $\geq$ 0.9)};
-      \draw[pipearrowmuted] (topk.east) -- (dedup.west);
-
-      % Arrow from topk to exbox — strictly horizontal, starts after dedup
+      % Arrow from narrative to output box
       \draw[->, draw=BPMuted, line width=0.4pt]
-        (dedup.east) -- (dedup.east -| exbox.west);
-
-      % --- Thesis block ---
-      \node[anchor=north west,
-            fill=BPLight,
-            minimum width=68mm,
-            inner xsep=4mm, inner ysep=3mm,
-            text=BPText,
-            align=left,
-            font=\small,
-            text width=60mm]
-        (thbox) at (522,390) {%
-          RAG превращает шумное двухнедельное окно
-          Telegram-новостей в компактный экономический нарратив%
-        };
-      \draw[BPNavy, line width=0.55mm]
-        (thbox.north west) -- (thbox.south west);
+        (narrative.east) --
+        node[above, font=\fontsize{7.5}{9}\selectfont\itshape, text=BPMuted]
+          {800--1500 слов}
+        (narrative.east -| outbox.west);
 
       \slidefooter{Сергей Устьянцев}{Извлечение сигнала инфляционных ожиданий
       из новостного потока с контролем утечки будущих данных}
