@@ -69,14 +69,15 @@
           }%
         };
 
-      % Dedup annotation above the horizontal arrow
-      \node[inner sep=0pt, text=BPMuted,
-            font=\fontsize{7.5}{9}\selectfont]
-        at (640,200) {дедупликация (cosine $\geq$ 0.9)};
+      % Dedup box with arrow from topk
+      \node[ragstep, draw=BPLine, fill=BPLight, minimum width=28mm,
+            font=\fontsize{7.5}{9}\selectfont\mdseries, text=BPMuted]
+        (dedup) at (430,252) {дедупликация\\(cosine $\geq$ 0.9)};
+      \draw[pipearrowmuted] (topk.east) -- (dedup.west);
 
-      % Arrow from topk to exbox — strictly horizontal
+      % Arrow from topk to exbox — strictly horizontal, starts after dedup
       \draw[->, draw=BPMuted, line width=0.4pt]
-        (topk.east) -- (topk.east -| exbox.west);
+        (dedup.east) -- (dedup.east -| exbox.west);
 
       % --- Thesis block ---
       \node[anchor=north west,
