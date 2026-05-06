@@ -171,5 +171,31 @@ def neuter(
     asyncio.run(run_neuter_pipeline(db_path, date, force=force))
 
 
+@app.command()
+def forecast(
+    date: str = typer.Option(..., help="Survey date (YYYY-MM-DD), e.g. 2021-12-20"),
+    condition: str = typer.Option(
+        "both",
+        "--condition",
+        help="Forecast condition: 'raw', 'neutered', or 'both'",
+    ),
+    n_samples: int = typer.Option(3, "--n-samples", help="Number of samples per persona"),
+    db_path: Path = typer.Option(DEFAULT_DB_PATH, help="Path to SQLite database file"),
+    force: bool = typer.Option(False, "--force", help="Overwrite existing forecast rows"),
+) -> None:
+    """Run forecast pipeline for a given run_date and store samples in DB."""
+    from amnesiac.forecast.runner import run_forecast_pipeline
+
+    asyncio.run(
+        run_forecast_pipeline(
+            db_path,
+            date,
+            condition=condition,
+            force=force,
+            n_samples=n_samples,
+        )
+    )
+
+
 if __name__ == "__main__":
     app()

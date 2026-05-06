@@ -124,6 +124,21 @@ _BASE_MIGRATIONS: list[tuple[str, str | list[str]]] = [
         )
         """,
     ),
+    (
+        "010_create_forecasts",
+        """
+        CREATE TABLE IF NOT EXISTS forecasts (
+            run_date      TEXT NOT NULL,
+            condition     TEXT NOT NULL,
+            persona       TEXT NOT NULL,
+            sample_index  INTEGER NOT NULL,
+            value         REAL,
+            model         TEXT NOT NULL,
+            created_at    TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            PRIMARY KEY (run_date, condition, persona, sample_index)
+        )
+        """,
+    ),
 ]
 
 

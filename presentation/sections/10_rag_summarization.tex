@@ -35,9 +35,9 @@
       \node[ragstep, draw=BPSkyBorder, fill=BPSkyFill, minimum width=48mm]
         (topk) at (185,226) {топ-50 по каждой теме};
 
-      \node[ragstep, draw=BPLine, fill=BPLight, minimum width=31mm,
-        font=\fontsize{7.1}{8.5}\selectfont, text=BPMuted]
-        (dedup) at (430,226) {дедупликация\\[-0.2mm](cosine $\geq$ 0.9)};
+      \node[ragstep, draw=BPLine, fill=BPLight, minimum width=32mm,
+        font=\scriptsize, text=BPMuted]
+        (dedup) at (425,226) {\resizebox{30mm}{!}{дедупликация (cosine $\geq$ 0.9)}};
 
       \node[ragstep, draw=BPSkyBorder, fill=BPSkyFill, minimum width=42mm]
         (theme) at (185,302) {тематические саммари $\times 9$};
@@ -54,10 +54,10 @@
       \draw[pipearrowmuted] (theme.south) -- (narrative.north);
 
       % --- Right column: retrieved-news example --------------------------
-      \node[anchor=north west, inner sep=0pt] (examplebox) at (452,147) {%
+      \node[anchor=north west, inner sep=0pt] (examplebox) at (522,140) {%
         \begin{tcolorbox}[
           enhanced,
-          width=76.5mm,
+          width=65mm,
           colback=BPLight,
           colframe=BPLine,
           boxrule=0.35pt,
@@ -76,19 +76,18 @@
         \end{tcolorbox}%
       };
 
-      \draw[pipearrowmuted]
-        (topk.north east) .. controls (350,168) and (410,154) ..
-        ([xshift=1.4mm,yshift=-1.4mm]examplebox.north west);
+      \draw[->, draw=BPMuted, line width=0.4pt]
+        (topk.east) -- (examplebox.west);
 
       % --- Thesis block ---------------------------------------------------
       \node[anchor=north west, inner sep=0pt, fill=BPLight,
-        minimum width=76.5mm, minimum height=19mm] (thesisbg)
-        at (452,314) {};
+        minimum width=65mm, minimum height=17mm] (thesisbg)
+        at ([yshift=-5pt]examplebox.south west) {};
       \draw[BPNavy, line width=0.55mm]
         (thesisbg.north west) -- (thesisbg.south west);
       \node[anchor=west, inner sep=0pt, text=BPText, align=left,
-        font=\fontsize{10.2}{13}\selectfont,
-        text width=73mm]
+        font=\small,
+        text width=58mm]
         at ([xshift=4.4mm]thesisbg.west) {%
           RAG превращает шумное двухнедельное окно Telegram-новостей\\
           в компактный экономический \mbox{нарратив}%

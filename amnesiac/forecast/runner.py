@@ -4,8 +4,16 @@ import math
 import os
 import random
 import re
+from pathlib import Path
 
 from amnesiac.forecast.personas import PERSONA_BODIES, TRAILING_PROMPT
+from amnesiac.forecast.store import (
+    delete_forecasts,
+    forecast_exists,
+    insert_samples,
+    load_summary_for_forecast,
+)
+from amnesiac.store import apply_migrations, get_connection
 
 logger = logging.getLogger(__name__)
 
@@ -91,3 +99,60 @@ async def run(
         logger.warning("Forecast runner produced %.1f%% NaN samples", nan_count / n_samples * 100.0)
 
     return {"persona": persona, "condition": condition, "samples": samples}
+
+
+async def run_forecast_pipeline(
+    db_path: Path,
+    run_date: str,
+    *,
+    condition: str,
+    force: bool = False,
+    n_samples: int = 3,
+) -> None:
+    """
+    Run forecast pipeline for a given run_date and condition spec.
+    Persists samples in `forecasts` table.
+    """
+    valid_conditions = {"raw", "neutered", "both"}
+    if condition not in valid_conditions:
+        raise ValueError(f"Unknown condition: {condition}")
+    if n_samples < 1:
+        raise ValueError("n_samples must be >= 1")
+
+    conn = get_connection(db_path)
+    try:
+        apply_migrations(conn)
+
+        conditions = ["raw", "neutered"] if condition == "both" else [condition]
+        persona_names = list(PERSONA_BODIES)
+
+        for cond in conditions:
+            existing = forecast_exists(conn, run_date, cond)
+            if existing and not force:
+                logger.info(
+                    "forecasts already has rows for %s/%s; pass --force to overwrite",
+                    run_date,
+                    cond,
+                )
+                continue
+
+            if existing and force:
+                deleted = delete_forecasts(conn, run_date, cond)
+                logger.info("deleted %d forecast rows for %s/%s", deleted, run_date, cond)
+
+            summary = load_summary_for_forecast(conn, run_date, cond)
+
+            for persona in persona_names:
+                result = await run(persona, summary, cond, n_samples)
+                insert_samples(conn, run_date, cond, persona, result["samples"], MODEL_P)
+
+            logger.info(
+                "forecast run_date=%s condition=%s personas=%d n_samples=%d total_rows=%d",
+                run_date,
+                cond,
+                len(PERSONA_BODIES),
+                n_samples,
+                len(PERSONA_BODIES) * n_samples,
+            )
+    finally:
+        conn.close()
