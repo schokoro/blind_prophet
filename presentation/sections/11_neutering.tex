@@ -1,2 +1,73 @@
-\begin{frame}{Entity neutering}
+\begin{frame}[t]{Entity neutering}
+\vspace{1cm}
+\centering
+
+\begin{adjustbox}{max width=0.98\textwidth,max height=0.70\textheight,center}
+\begin{tikzpicture}[
+  >=Latex,
+  x=1cm,
+  y=1cm,
+  font=\scriptsize,
+  rawbox/.style={draw=black!55,fill=black!4,rounded corners=2.5mm,minimum width=2.25cm,minimum height=0.72cm,align=center,line width=0.6pt},
+  mainbox/.style={draw=blue!75!black,fill=blue!7,rounded corners=2.5mm,minimum width=2.65cm,minimum height=0.72cm,align=center,line width=0.6pt},
+  neutbox/.style={draw=green!50!black,fill=green!9,rounded corners=2.5mm,minimum width=2.25cm,minimum height=0.72cm,align=center,line width=0.6pt},
+  judgebox/.style={draw=orange!75!black,fill=orange!9,rounded corners=2.5mm,minimum width=4.30cm,minimum height=0.72cm,align=center,line width=0.6pt},
+  scorebox/.style={draw=orange!75!black,fill=orange!5,rounded corners=2.5mm,minimum width=3.30cm,minimum height=0.72cm,align=center,line width=0.6pt},
+  deltabox/.style={draw=orange!85!black,fill=orange!14,rounded corners=2.5mm,minimum width=3.90cm,minimum height=0.56cm,align=center,line width=0.6pt},
+  flow/.style={->,line width=0.55pt,draw=black!65},
+  feedback/.style={->,dashed,line width=0.55pt,draw=black!55}
+]
+
+% --- nodes ---
+\node[rawbox]  (raw)  at (0.0, 5.55) {raw саммари\\[-0.5mm]\scriptsize из E05 summarize};
+
+\node[mainbox] (q1)   at (3.15, 5.55) {J1 Q1\\[-0.5mm]\scriptsize ищет period markers};
+\node[mainbox] (rew)  at (5.95, 5.55) {N rewriter\\[-0.5mm]\scriptsize переписывает текст};
+\node[mainbox] (q3)   at (4.55, 4.35) {J1 Q3\\[-0.5mm]\scriptsize проверяет сигнал};
+
+\node[neutbox] (neut) at (9.35, 5.55) {neutered\\саммари};
+
+\node[judgebox] (j2)  at (4.65, 2.45) {J2 holdout judge\\[-0.5mm]\scriptsize другое семейство, не в цикле};
+
+\node[scorebox] (sraw)  at (1.55, 1.05) {period\_id\_score raw\\[-0.5mm]\scriptsize 5 семплов, агрегация};
+\node[scorebox] (sneut) at (7.75, 1.05) {period\_id\_score neutered\\[-0.5mm]\scriptsize 5 семплов, агрегация};
+
+\node[deltabox] (delta) at (4.65, 0.00) {delta = raw $-$ neutered};
+
+% --- loop frame ---
+\draw[blue!75!black,dashed,line width=0.65pt,rounded corners=2.5mm]
+  (1.75,3.55) rectangle (7.40,6.30);
+
+\node[font=\scriptsize\bfseries,text=black!70] at (4.57,6.48)
+  {цикл --- до 3 итераций};
+
+% --- top flow ---
+\draw[flow] (raw.east) -- (q1.west);
+\draw[flow] (q1.east) -- (rew.west);
+\draw[flow] (rew.east) -- (neut.west);
+
+% --- internal cycle ---
+\draw[flow] (rew.south) |- (q3.east);
+\draw[feedback] (q3.west) -| node[pos=0.22,left,text=black!55] {\scriptsize iter+1} (q1.south);
+
+% --- holdout routes ---
+\draw[flow] (raw.south) |-
+    node[pos=0.28,left,text=black!55] {\scriptsize raw}
+    (j2.west);
+
+\draw[flow] (neut.south) |-
+    node[pos=0.28,right,text=black!55] {\scriptsize neutered}
+    (j2.east);
+
+% --- scores ---
+\draw[flow] (j2.south west) -- (sraw.north);
+\draw[flow] (j2.south east) -- (sneut.north);
+
+% --- delta ---
+\draw[flow] (sraw.south) |- (delta.west);
+\draw[flow] (sneut.south) |- (delta.east);
+
+\end{tikzpicture}
+\end{adjustbox}
+
 \end{frame}

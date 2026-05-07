@@ -1,5 +1,10 @@
+from pathlib import Path
+
 from pydantic import Field
 from pydantic_settings import BaseSettings
+
+
+DEFAULT_DB_PATH = Path("data/db/blind_prophet.db")
 
 
 class Settings(BaseSettings):

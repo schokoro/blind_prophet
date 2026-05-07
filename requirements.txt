@@ -2,6 +2,7 @@
 openai
 openpyxl
 requests
+matplotlib
 
 # Dev
 pytest

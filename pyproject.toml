@@ -15,7 +15,8 @@ dependencies = [
     "pyyaml",
     "python-socks",
     "emoji",
-    "razdel"
+    "razdel",
+    "matplotlib"
 ]
 
 [project.optional-dependencies]

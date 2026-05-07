@@ -5,13 +5,12 @@ from typing import Optional
 
 import typer
 
+from amnesiac.config import DEFAULT_DB_PATH
 from amnesiac.utils import normalize_run_date
 
 app = typer.Typer()
 logging.basicConfig(level=logging.INFO, format="%(levelname)s %(message)s")
 logger = logging.getLogger(__name__)
-
-DEFAULT_DB_PATH = Path("data/db/blind_prophet.db")
 
 
 @app.command()
@@ -250,6 +249,16 @@ def series(
     ]
     if failed:
         logger.warning("Failed dates: %s", [r.run_date for r in failed])
+
+
+@app.command()
+def eval(
+    db_path: Path = typer.Option(DEFAULT_DB_PATH, help="Path to SQLite database file"),
+) -> None:
+    """Build final evaluation artifacts in data/eval/."""
+    from scripts.build_eval import main as build_eval_main
+
+    build_eval_main(db_path)
 
 
 if __name__ == "__main__":
