@@ -1,8 +1,12 @@
 \begin{frame}[t]{Entity neutering}
-\vspace{1cm}
-\centering
+\vspace{0.6cm}
 
-\begin{adjustbox}{max width=0.98\textwidth,max height=0.70\textheight,center}
+\begin{columns}[T, totalwidth=\textwidth]
+
+  %% ── Left column: diagram ──────────────────────────────────────────
+  \begin{column}{0.62\textwidth}
+    \vspace{0.8cm}
+    \begin{adjustbox}{max width=\linewidth, max height=0.65\textheight, left}
 \begin{tikzpicture}[
   >=Latex,
   x=1cm,
@@ -19,13 +23,13 @@
 ]
 
 % --- nodes ---
-\node[rawbox]  (raw)  at (0.0, 5.55) {raw саммари\\[-0.5mm]\scriptsize из E05 summarize};
+\node[rawbox]  (raw)  at (0.0, 5.55) {исходное саммари\\[-0.5mm]\scriptsize };
 
-\node[mainbox] (q1)   at (3.15, 5.55) {J1 Q1\\[-0.5mm]\scriptsize ищет period markers};
+\node[mainbox] (q1)   at (3.15, 5.55) {J1 Q1 ищет\\[-0.5mm]\scriptsize времен{н}\`ые маркеры};
 \node[mainbox] (rew)  at (5.95, 5.55) {N rewriter\\[-0.5mm]\scriptsize переписывает текст};
 \node[mainbox] (q3)   at (4.55, 4.35) {J1 Q3\\[-0.5mm]\scriptsize проверяет сигнал};
 
-\node[neutbox] (neut) at (9.35, 5.55) {neutered\\саммари};
+\node[neutbox] (neut) at (9.35, 5.55) {нейтрализованное\\саммари};
 
 \node[judgebox] (j2)  at (4.65, 2.45) {J2 holdout judge\\[-0.5mm]\scriptsize другое семейство, не в цикле};
 
@@ -68,6 +72,53 @@
 \draw[flow] (sneut.south) |- (delta.east);
 
 \end{tikzpicture}
-\end{adjustbox}
+    \end{adjustbox}
+  \end{column}
+
+  %% ── Right column: legend ──────────────────────────────────────────
+  \begin{column}{0.35\textwidth}
+    \vspace{0.12cm}
+    {\fontsize{7}{8.4}\selectfont\bfseries\scshape\color{BPMuted} Роли и модели}
+
+    \vspace{0.14cm}
+    {\fontsize{4.2}{5.3}\selectfont\color{BPText}
+    \begin{tabular}{@{}p{0.31\linewidth}p{0.65\linewidth}@{}}
+      \textbf{Роль} & \textbf{Модель} \\
+      Summarizer & deepseek/deepseek-v4-flash \\
+      J1 (в цикле) & qwen/qwen3.5-397b-a17b \\
+      N (нейтрализатор) & deepseek/deepseek-v4-flash $\times$ 8 точек, openai/gpt-5.4 $\times$ 2 точки \\
+      J2 (holdout) & anthropic/claude-haiku-4.5 \\
+      P (прогноз) & deepseek/deepseek-v4-flash \\
+    \end{tabular}
+    }
+
+    \vspace{0.18cm}
+    {\fontsize{5.2}{7.2}\selectfont\color{BPText}
+
+    \textbf{J1} — судья-в-цикле\\
+    Проверяет наличие временны\'{х} маркеров~(Q1)
+    и сохранность прогностических сигналов~(Q3)
+
+    \vspace{0.18cm}
+    \textbf{N} — нейтрализатор\\
+    Переписывает текст, убирая признаки
+    идентификации периода
+
+    \vspace{0.18cm}
+    \textbf{J2} — независимый судья\\
+    Другое модельное семейство; не участвует
+    в цикле; оценивает итоговую идентифицируемость
+
+    \vspace{0.24cm}
+    {\color{BPMuted}\fontsize{5}{7}\selectfont
+    \textbf{Q1} \ «содержит ли текст временн\'{ы}е маркеры?»\\[3pt]
+    \textbf{Q3} \ «сохранены ли прогностические сигналы?»\\[3pt]
+    $\boldsymbol{\delta}$ \ $= \text{id\_score}_{\text{raw}} - \text{id\_score}_{\text{neutered}}$
+    }
+
+    }
+  \end{column}
+
+\end{columns}
 
 \end{frame}
