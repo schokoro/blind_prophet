@@ -1,2 +1,94 @@
-\begin{frame}{Forecast / eval}
+% ─── Slide 13: Forecast / eval ────────────────────────────────────────────────
+\begin{frame}[plain]
+  \begin{tikzpicture}[
+    remember picture,
+    overlay,
+    x=0.1666667mm,
+    y=-0.1666667mm
+  ]
+    \begin{scope}[shift={(current page.north west)}]
+
+      \slideheader{Прогноз инфляционных ожиданий: результаты}
+
+      % ── Left: combined plot ────────────────────────────────────────────────
+      % Content area x: 64–930. Left col: 64–555 (491u = ~82mm).
+      % height=52mm=312u → bottom edge y≈88+312=400
+      \node[anchor=north west, inner sep=0pt, xshift=-.8cm, yshift=-0.3cm] at (64, 90) {%
+        \includegraphics[height=60mm, keepaspectratio]{images/plot_combined}%
+      };
+
+      % ── Right column header ────────────────────────────────────────────────
+      \node[anchor=north west, inner sep=0pt,
+            text=BPMuted,
+            font=\fontsize{6}{7.5}\selectfont\bfseries\scshape]
+        at (660, 98) {Результат:};
+
+      % ── Main metric block ──────────────────────────────────────────────────
+      \node[anchor=north west, inner sep=0pt,
+            text=BPText,
+            font=\fontsize{6}{7.5}\selectfont]
+        at (660, 122) {Суммарная абсолютная ошибка:};
+
+      % raw → neutered numbers, large
+      \node[anchor=north west, inner sep=0pt,
+            font=\fontsize{6}{7.5}\selectfont\bfseries, text=BPText]
+        at (660, 144) {42.6 $\rightarrow$ 31.9};
+
+      % −25% accent
+      \node[anchor=north west, inner sep=0pt,
+            font=\fontsize{6}{7.5}\selectfont\bfseries, text=BPNavy]
+        at (740, 144) {(−25\%)};
+
+      \node[anchor=north west, inner sep=0pt,
+            font=\fontsize{6}{7.5}\selectfont, text=BPMuted]
+        at (660, 180) {исходный $\rightarrow$ нейтрализованный};
+
+      % sign-match
+      \node[anchor=north west, inner sep=0pt,
+            font=\fontsize{6}{7.5}\selectfont, text=BPText]
+        at (660, 202) {sign-match \textbf{7/9} в обоих случаях};
+
+      % ── Divider ────────────────────────────────────────────────────────────
+      \draw[BPLine, line width=0.4pt] (660, 240) -- (930, 240);
+
+      % ── Findings ───────────────────────────────────────────────────────────
+      \node[anchor=north west, inner sep=0pt,
+            text=BPMuted,
+            font=\fontsize{6}{7.5}\selectfont\bfseries\scshape]
+        at (660, 250) {Наблюдения:};
+
+      % Finding 1
+      \node[anchor=north west, inner sep=0pt,
+            font=\fontsize{6}{7.5}\selectfont, text=BPText,
+            text width=59mm]
+        at (660, 270) {%
+          \textbf{Спокойный период:} neutered точнее на\\
+          6/10 точек — убранные числовые якоря\\
+          активируют persona-differentiation%
+        };
+
+      % Finding 2
+      \node[anchor=north west, inner sep=0pt,
+            font=\fontsize{6}{7.5}\selectfont, text=BPText,
+            text width=59mm]
+        at (660, 340) {%
+          \textbf{Шок поймали оба условия:} направление\\
+          верно (sign-match 7/9), уровень на neutered\\точнее%
+        };
+
+      % Finding 3
+      \node[anchor=north west, inner sep=0pt,
+            font=\fontsize{6}{7.5}\selectfont, text=BPText,
+            text width=59mm]
+        at (660, 400) {%
+          \textbf{Постшоковое превышение:} оба условия\\
+          переоценивают апр–июн 2022 — метод ловит\\
+          тон, не ловит адаптацию%
+        };
+
+      \slidefooter{Сергей Устьянцев}{Извлечение сигнала инфляционных ожиданий
+      из новостного потока с контролем утечки будущих данных}
+
+    \end{scope}
+  \end{tikzpicture}
 \end{frame}

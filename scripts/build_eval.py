@@ -30,7 +30,7 @@ SERIES_DATES = [
     "2022-05-20",
     "2022-06-20",
 ]
-WAR_START = datetime(2022, 2, 24)
+SVO_START = datetime(2022, 2, 24)
 EVAL_DIR = Path("data/eval")
 
 # Status -> marker mapping for neutered plot
@@ -273,8 +273,8 @@ def build_plot_combined(data: dict, output_path: Path = EVAL_DIR / "plot_combine
         show_legend=False,
     )
     handles = _dedupe_handles(raw_handles + neutered_handles)
-    fig.legend(handles=handles, loc="upper center", ncol=5, frameon=False, bbox_to_anchor=(0.5, 0.94))
-    fig.suptitle("forecast vs инФОМ — raw vs neutered (n=10 точек)", fontsize=18, y=0.99)
+    fig.legend(handles=handles, loc="upper center", ncol=4, frameon=False, bbox_to_anchor=(0.5, 0.94), fontsize=13)
+    fig.suptitle("Прогноз vs инФОМ — исходный vs нейтрализованный", fontsize=20, y=0.99)
     fig.tight_layout(rect=(0, 0, 1, 0.9))
     output_path.parent.mkdir(parents=True, exist_ok=True)
     fig.savefig(output_path, dpi=180)
@@ -474,6 +474,10 @@ def _plot_condition(
     median = [_plot_value(record[f"{condition}_median"]) for record in records]
     p25 = [_plot_value(record[f"{condition}_p25"]) for record in records]
     p75 = [_plot_value(record[f"{condition}_p75"]) for record in records]
+    condition_map = {
+        'neutered': 'нейтрализованный',
+        'raw': 'исходный'
+    }
 
     actual_line = ax.plot(
         dates,
@@ -481,20 +485,21 @@ def _plot_condition(
         color=COLOR_ACTUAL,
         marker="o",
         linewidth=3,
-        label="инФОМ actual",
+        label="инФОМ",
     )[0]
     forecast_line = ax.plot(
         dates,
         median,
         color=color,
         linewidth=2.5,
-        label=f"{condition} forecast median",
+        label=f"{condition_map.get(condition, condition)} прогноз, медиана",
     )[0]
     if not status_markers:
         forecast_line.set_marker("o")
     else:
         for date, value, record in zip(dates, median, records, strict=True):
             status = record["neutering_status"]
+            # print(f"Статус: {title}")
             ax.plot(
                 [date],
                 [value],
@@ -505,12 +510,12 @@ def _plot_condition(
                 markeredgewidth=2,
             )
 
-    ax.fill_between(dates, p25, p75, color=color, alpha=0.2, label=f"{condition} IQR")
-    ax.axvline(WAR_START, color="#808080", linestyle="--", linewidth=1.5, alpha=0.8, label="war start")
+    ax.fill_between(dates, p25, p75, color=color, alpha=0.2, label=f"{condition_map.get(condition, condition)} IQR")
+    ax.axvline(SVO_START, color="#808080", linestyle="--", linewidth=1.5, alpha=0.8, label="СВО")
     y_top = _axis_top(actual + median + p25 + p75)
-    ax.text(WAR_START, y_top, "war start", rotation=90, va="top", ha="right", color="#666666")
-    ax.set_title(title, fontsize=16)
-    ax.set_ylabel("% инфляционных ожиданий, 12 месяцев")
+    # ax.text(SVO_START, y_top, "СВО", rotation=90, va="top", ha="right", color="#666666")
+    ax.set_title(title, fontsize=20)
+    ax.set_ylabel("инфляционные ожидания, % за 12 месяцев")
     ax.grid(alpha=0.3)
     ax.xaxis.set_major_locator(mdates.MonthLocator(interval=1))
     ax.xaxis.set_major_formatter(mdates.DateFormatter("%b %Y"))
@@ -518,8 +523,8 @@ def _plot_condition(
     ax.set_ylim(bottom=0, top=y_top)
 
     handles = [actual_line, forecast_line]
-    handles.append(Line2D([0], [0], color=color, linewidth=8, alpha=0.2, label=f"{condition} IQR"))
-    handles.append(Line2D([0], [0], color="#808080", linestyle="--", label="war start"))
+    handles.append(Line2D([0], [0], color=color, linewidth=8, alpha=0.2, label=f"{condition_map.get(condition, condition)} IQR"))
+    handles.append(Line2D([0], [0], color="#808080", linestyle="--", label="СВО"))
     if status_markers:
         handles.extend(_status_legend_handles(color))
     if show_legend:
@@ -529,9 +534,9 @@ def _plot_condition(
 
 def _status_legend_handles(color: str) -> list[Line2D]:
     return [
-        Line2D([0], [0], color=color, marker="o", linestyle="None", label="neutered"),
-        Line2D([0], [0], color=color, marker="^", linestyle="None", label="with caveats"),
-        Line2D([0], [0], color=color, marker="x", linestyle="None", label="method failed"),
+        Line2D([0], [0], color=color, marker="o", linestyle="None", label="успешная нейтрализация"),
+        # Line2D([0], [0], color=color, marker="^", linestyle="None", label="with caveats"),
+        Line2D([0], [0], color=color, marker="x", linestyle="None", label="неудачная нейтрализация"),
     ]
 
 

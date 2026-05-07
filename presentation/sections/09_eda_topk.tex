@@ -1,9 +1,8 @@
 \begin{frame}[plain]
   \begin{tikzpicture}[remember picture,overlay,x=0.1666667mm,y=-0.1666667mm]
     \begin{scope}[shift={(current page.north west)}]
-      \slideheader{Similarity distribution is unimodal — threshold doesn't work}
-      \slidefooter{Сергей Устьянцев}{Извлечение сигнала инфляционных ожиданий
-из новостного потока с контролем утечки будущих данных}
+      \slideheader{EDA: геометрия пространства эмбеддингов}
+      \slidefooter{Сергей Устьянцев}{Извлечение сигнала инфляционных ожиданий из новостного потока с контролем утечки будущих данных}
     \end{scope}
   \end{tikzpicture}
 
@@ -12,7 +11,10 @@
 
   \begin{columns}[T,totalwidth=\textwidth]
     \begin{column}{0.59\textwidth}
-      \includegraphics[width=\linewidth,height=0.46\textheight,keepaspectratio]{images/10_unimodal.png}
+      \node[anchor=north west, inner sep=0pt, xshift=-.8cm, yshift=-0.3cm] at (64, 90) {%
+        \includegraphics[width=\linewidth,height=0.6\textheight,keepaspectratio]{images/unimodal.png}
+      };
+
 
       \vspace{-4pt}
       {\small\color{BPMuted}
@@ -31,7 +33,7 @@
   \vspace{8pt}
 
   {\small\color{BPMuted}
-  • распределение унимодальное — естественной границы сигнал/шум нет\\
+  • распределение унимодальное — естественной\\границы сигнал/шум нет\\
   • при threshold=0.5 спокойный период почти пустой\\
   • решение: top-K=50 по каждой оси, prime1 исключён}
 \end{frame}
