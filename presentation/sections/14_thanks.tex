@@ -3,8 +3,8 @@
     \begin{scope}[shift={(current page.north west)}]
 
       % ── Картинка: левый нижний угол, чуть выходит за footer ──
-      \node[anchor=south west, inner sep=0pt, xshift=0.0mm, yshift=10.0mm] at (current page.south west) {%
-        \includegraphics[width=100mm]{images/thanks}%
+      \node[anchor=south west, inner sep=0pt, xshift=-5.0mm, yshift=10.0mm] at (current page.south west) {%
+        \includegraphics[width=125mm,keepaspectratio]{images/thanks}%
       };
 
       % ── СПАСИБО ──────────────────────────────────────────────
@@ -12,14 +12,14 @@
             xshift=-30.0mm, yshift=5.0mm,
             text=BPBlue,
             font=\fontsize{42}{46}\selectfont\bfseries]
-        at (770,270) {Спасибо!};
+        at (840,270) {Спасибо!};
 
       % ── подпись ──────────────────────────────────────────────
       \node[anchor=north,
             xshift=-30.0mm, yshift=5.0mm,
             text=BPMuted,
             font=\fontsize{11}{14}\selectfont]
-        at (770,320) {Вопросы?};
+        at (840,320) {Вопросы?};
 
       \slidefooter{Сергей Устьянцев}{Извлечение сигнала инфляционных ожиданий из новостного потока с контролем утечки будущих данных}
 
