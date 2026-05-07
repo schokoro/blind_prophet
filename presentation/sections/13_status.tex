@@ -1,91 +1,64 @@
-\begin{frame}{Status / risks / next steps}
+% ─── Slide 13: Forecast / eval ────────────────────────────────────────────────
+\begin{frame}[plain]
+  \begin{tikzpicture}[
+    remember picture,
+    overlay,
+    x=0.1666667mm,
+    y=-0.1666667mm
+  ]
+    \begin{scope}[shift={(current page.north west)}]
 
-  \begin{columns}[T]
+      \slideheader{Прогноз инфляционных ожиданий: выводы}
 
-    %% ---- Left column: three method limits -------------------------
-    \begin{column}{0.52\textwidth}
+      \node[anchor=north west, inner sep=0pt] at (60, 130) {%
+        \parbox{140mm}{%
+          \fontsize{7.5}{10.5}\selectfont\color{BPText}%
+          %
+          \textbullet\enskip
+          \textbf{Концепция подтверждена: }
+          новостной поток содержит
+          извлекаемый сигнал инфляционных ожиданий
+          \\[5pt]
+          %
+          \textbullet\enskip
+          \textbf{Нейтрализация снижает абсолютную ошибку }
+          прогноза на \textbf{25\%} (6 из 10 точек, спокойный период)
+          \\[5pt]
+          %
+          \textbullet\enskip
+          \textbf{Нейтрализация активирует persona-prior:}
+          убирая числовой якорь, модель опирается на
+          демографию персоны, а не на headline CPI
+          \\[5pt]
+          %
+          \textbullet\enskip
+          \textbf{Структурный предел нейтрализации:}
+          на уникальных режимах прогностический сигнал
+          и идентификатор периода — одни и те же данные
+          \\[5pt]
+          %
+%          \textbullet\enskip
+%          Границы применимости задокументированы
+%          и воспроизводимы%
+%          \\[11pt]
+          %
+          \textcolor{BPMuted}{\fontsize{7.5}{9}\selectfont\bfseries\scshape Риски}%
+          \\[5pt]
+          %
+          \textbullet\enskip
+          Гиперпараметры не валидированы: горизонт~2~нед.,
+          top-K=50, 9~осей, threshold=0.9 выбраны эвристически
+          \\[5pt]
+          %
+          \textbullet\enskip
+          Одна серия (n=10) и стохастичность нейтрализации
+          — нет significance test, нет оценки variance метода%
+        }%
+      };
 
-      \textbf{\small Три границы метода}
+      \slidefooter{Сергей Устьянцев}{Извлечение сигнала инфляционных ожиданий
+      из новостного потока с контролем утечки будущих данных}
 
-      \vspace{0.4em}
-      \begin{tcolorbox}[
-          colback=orange!8, colframe=orange!50,
-          boxrule=0.4pt, arc=3pt,
-          left=5pt, right=5pt, top=3pt, bottom=3pt,
-          fonttitle=\footnotesize\bfseries, title={1.~Optimum overshoot · 2021-12}
-      ]
-        \scriptsize
-        Агрессивная нейтрализация ($\Delta=0.88$) убрала числовые якоря,
-        нужные для калибровки. Neutered хуже raw.\\
-        \textbf{Сильнее ≠ лучше.}
-      \end{tcolorbox}
-
-      \vspace{0.3em}
-      \begin{tcolorbox}[
-          colback=red!7, colframe=red!40,
-          boxrule=0.4pt, arc=3pt,
-          left=5pt, right=5pt, top=3pt, bottom=3pt,
-          fonttitle=\footnotesize\bfseries, title={2.~Empirical ceiling · 2022-03}
-      ]
-        \scriptsize
-        Лексические маркеры убраны, но уникальная макроконфигурация
-        (FX + ставка + цепочки) всё равно идентифицирует период.\\
-        \textbf{Engelberg ceiling на реальных данных.}
-      \end{tcolorbox}
-
-      \vspace{0.3em}
-      \begin{tcolorbox}[
-          colback=gray!8, colframe=gray!40,
-          boxrule=0.4pt, arc=3pt,
-          left=5pt, right=5pt, top=3pt, bottom=3pt,
-          fonttitle=\footnotesize\bfseries, title={3.~Recovery dynamics · 2022-04/05/06}
-      ]
-        \scriptsize
-        Население адаптировалось быстро, новости остались плохими.
-        Метод читает медиатон, не читает адаптацию.\\
-        \textbf{Overshoot устойчив на 3 точках.}
-      \end{tcolorbox}
-
-    \end{column}
-
-    %% ---- Right column: known limitations + directions ----------------
-    \begin{column}{0.44\textwidth}
-
-      \textbf{\small Известные ограничения PoC}
-
-      \vspace{0.3em}
-      \begin{itemize}\scriptsize\setlength\itemsep{2pt}
-        \item[$\cdot$] Стохастичность цикла — нужно $N{=}K$ прогонов
-        \item[$\cdot$] Blacklist слишком жёсткий на родовых словах эпохи
-        \item[$\cdot$] $n{=}10$ точек, формальная статистика невозможна
-      \end{itemize}
-
-      \vspace{0.8em}
-      \textbf{\small Направления}
-
-      \vspace{0.3em}
-      \begin{itemize}\scriptsize\setlength\itemsep{2pt}
-        \item[$\rightarrow$] $N{=}K$ reruns → характеристика stability
-        \item[$\rightarrow$] J2-grounded blacklist (data-driven)
-        \item[$\rightarrow$] Серия 36–48 точек + significance test
-        \item[$\rightarrow$] Persona ablation study
-        \item[$\rightarrow$] Отдельные модели Summarizer / Neutralizer
-      \end{itemize}
-
-      \vspace{0.8em}
-      \begin{tcolorbox}[
-          colback=blue!7, colframe=blue!35,
-          boxrule=0.4pt, arc=3pt,
-          left=5pt, right=5pt, top=3pt, bottom=3pt
-      ]
-        \scriptsize
-        \textbf{Side finding:} нейтрализация активирует persona-differentiation.
-        Raw IQR узкий (персоны слипаются у headline CPI);
-        neutered IQR широкий (каждая персона — свой prior).
-      \end{tcolorbox}
-
-    \end{column}
-
-  \end{columns}
-
+    \end{scope}
+  \end{tikzpicture}
 \end{frame}
