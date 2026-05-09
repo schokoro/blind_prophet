@@ -1,6 +1,8 @@
 """Iterative neutering cycle entry point."""
 
 import logging
+from collections.abc import Callable
+from typing import Any
 
 from openai import AsyncOpenAI
 
@@ -16,10 +18,16 @@ from amnesiac.neuter.metrics import (
 logger = logging.getLogger(__name__)
 
 
-async def run_cycle(client: AsyncOpenAI, raw_summary: str, *, model_n: str = MODEL_N) -> dict:
+async def run_cycle(
+    client: AsyncOpenAI,
+    raw_summary: str,
+    *,
+    model_n: str = MODEL_N,
+    iteration_callback: Callable[[dict[str, Any]], None] | None = None,
+) -> dict:
     """
     Run up to N_MAX iterations of N → J1(Q1) → N rewrite → J1(Q3) → residual check
-    on raw_summary. In-memory only; no disk I/O.
+    on raw_summary. In-memory only unless iteration_callback is provided.
 
     Returns:
         {
@@ -92,21 +100,51 @@ async def run_cycle(client: AsyncOpenAI, raw_summary: str, *, model_n: str = MOD
                 [(m["pattern"], m["match"]) for m in residual["hard_fail"]][:30],
             )
 
+        accepted_candidate = False
         if status == "continue":
             accepted_iteration = iteration
             accepted_summary = candidate_summary
             accepted_q3 = q3_candidate
             accepted_residual = residual
-            continue
-
-        stop_status = status
-        if rollback:
-            logger.info("Rolling back rejected neutering iteration %s with status=%s", iteration, status)
+            accepted_candidate = True
         else:
-            accepted_iteration = iteration
-            accepted_summary = candidate_summary
-            accepted_q3 = q3_candidate
-            accepted_residual = residual
+            stop_status = status
+            if rollback:
+                logger.info("Rolling back rejected neutering iteration %s with status=%s", iteration, status)
+            else:
+                accepted_iteration = iteration
+                accepted_summary = candidate_summary
+                accepted_q3 = q3_candidate
+                accepted_residual = residual
+                accepted_candidate = True
+
+        if iteration_callback is not None:
+            record = {
+                "iteration": iteration,
+                "status": status,
+                "rollback": rollback,
+                "q3_preservation": q3_preservation,
+                "length_ratio": length_ratio,
+                "residual_hard_fail_count": len(residual["hard_fail"]),
+                "residual_warn_count": len(residual["warn"]),
+                "accepted_iteration_after_step": accepted_iteration,
+                "accepted_candidate": accepted_candidate,
+            }
+            iteration_callback(
+                {
+                    "iteration": iteration,
+                    "raw_summary": prev_summary,
+                    "candidate_summary": candidate_summary,
+                    "q1": q1,
+                    "q3_baseline": q3_baseline,
+                    "q3_candidate": q3_candidate,
+                    "residual": residual,
+                    "record": record,
+                }
+            )
+
+        if status == "continue":
+            continue
         break
 
     status_for_mapping = stop_status

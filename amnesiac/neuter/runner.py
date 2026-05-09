@@ -15,6 +15,7 @@ from amnesiac.neuter.config import (
     MODEL_N,
     OPENROUTER_BASE_URL,
 )
+from amnesiac.neuter.artifacts import NeuterArtifactWriter
 from amnesiac.neuter.cycle import run_cycle
 from amnesiac.neuter.holdout import run_j2_holdout
 from amnesiac.store import apply_migrations, get_connection
@@ -28,6 +29,7 @@ async def run_neuter_pipeline(
     *,
     force: bool = False,
     model_n_override: str | None = None,
+    save_artifacts: bool = False,
 ) -> None:
     """Run full neutering pipeline for run_date and persist the result to neutered_summaries."""
     model_n = model_n_override if model_n_override else MODEL_N
@@ -65,12 +67,22 @@ async def run_neuter_pipeline(
         if not api_key:
             raise RuntimeError("OPENROUTER_API_KEY is required to run the neutering pipeline")
 
+        artifact_writer = None
+        if save_artifacts:
+            artifact_writer = NeuterArtifactWriter.create(run_date)
+            logger.info("Saving neuter artifacts to %s", artifact_writer.artifact_dir)
+
         async with AsyncOpenAI(
             api_key=api_key,
             base_url=OPENROUTER_BASE_URL,
             timeout=LLM_TIMEOUT_SECONDS,
         ) as client:
-            cycle_result = await run_cycle(client, raw_summary, model_n=model_n)
+            cycle_result = await run_cycle(
+                client,
+                raw_summary,
+                model_n=model_n,
+                iteration_callback=artifact_writer.write_iteration if artifact_writer else None,
+            )
             raw_holdout = await run_j2_holdout(
                 client,
                 raw_summary,
@@ -125,6 +137,25 @@ async def run_neuter_pipeline(
             ),
         )
         conn.commit()
+        if artifact_writer is not None:
+            artifact_writer.write_final(
+                {
+                    "neutering_status": cycle_result["neutering_status"],
+                    "final_iteration": cycle_result["final_iteration"],
+                    "q3_preservation": cycle_result["q3_preservation"],
+                    "q3_strength_net_shift": cycle_result["q3_strength_net_shift"],
+                    "length_ratio": cycle_result["length_ratio"],
+                    "residual_hard_fail_count": cycle_result["residual_hard_fail_count"],
+                    "residual_warn_count": cycle_result["residual_warn_count"],
+                    "raw_period_id_score": raw_period_id_score,
+                    "neutered_period_id_score": neutered_period_id_score,
+                    "period_delta_vs_raw": period_delta_vs_raw,
+                    "judge_blind": judge_blind,
+                    "model_n": model_n,
+                    "model_j1": MODEL_J1,
+                    "model_j2": MODEL_J2,
+                }
+            )
         logger.info(
             "neuter run_date=%s status=%s iter=%d q3=%.3f raw=%.3f neutered=%.3f delta=%.3f blind=%d",
             run_date,

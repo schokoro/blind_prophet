@@ -171,6 +171,11 @@ def neuter(
     ),
     db_path: Path = typer.Option(DEFAULT_DB_PATH, help="Path to SQLite database file"),
     force: bool = typer.Option(False, "--force", help="Overwrite existing record"),
+    save_artifacts: bool = typer.Option(
+        False,
+        "--save-artifacts/--no-save-artifacts",
+        help="Save per-iteration neutering audit artifacts under data/runs/neuter/",
+    ),
 ) -> None:
     """Run neutering pipeline for a given run_date."""
     from amnesiac.neuter.runner import run_neuter_pipeline
@@ -181,6 +186,7 @@ def neuter(
             normalize_run_date(date),
             force=force,
             model_n_override=model,
+            save_artifacts=save_artifacts,
         )
     )
 
