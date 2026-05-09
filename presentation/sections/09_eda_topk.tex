@@ -1,7 +1,7 @@
 \begin{frame}[plain]
   \begin{tikzpicture}[remember picture,overlay,x=0.1666667mm,y=-0.1666667mm]
     \begin{scope}[shift={(current page.north west)}]
-      \slideheader{EDA: геометрия пространства эмбеддингов}
+      \slideheader{EDA: отбор релевантных новостей}
       \slidefooter{Сергей Устьянцев}{Извлечение сигнала инфляционных ожиданий из новостного потока с контролем утечки будущих данных}
     \end{scope}
   \end{tikzpicture}
@@ -17,22 +17,22 @@
 
 
       \vspace{-4pt}
-      {\small\color{BPMuted}
+      {\scriptsize\color{BPMuted}
       «максимальная схожесть с любой из 9 тем — спокойный период vs санкционный шок»}
     \end{column}
 
     \begin{column}{0.38\textwidth}
-      \includegraphics[width=\linewidth,height=0.6\textheight,keepaspectratio]{images/10_retr_vs_nonretr.jpg}
+      \includegraphics[width=\linewidth,height=0.5\textheight,keepaspectratio]{images/10_retr_vs_nonretr.jpg}
 
       \vspace{-4pt}
-      {\small\color{BPMuted}
+      {\scriptsize\color{BPMuted}
       «спокойный период, threshold=0.5 — retrieved (синий) vs остальные»}
     \end{column}
   \end{columns}
 
-  \vspace{4pt}
+  \vspace{2pt}
 
-  {\small\color{BPMuted}
+  {\scriptsize\color{BPMuted}
   • распределение унимодальное — естественной границы сигнал/шум нет\\
   • при threshold=0.5 спокойный период почти пустой\\
   • решение: top-K=50 по каждой оси, prime1 исключён}
